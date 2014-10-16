@@ -1,4 +1,3 @@
-//trying something
 #include <stdio.h>
 #include "my_stdio.h"
 
