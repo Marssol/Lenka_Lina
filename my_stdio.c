@@ -55,98 +55,67 @@ int my_fclose(MY_FILE *f)
 
 int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f)
 {
-	if (f->mode == WRITE)
-		return -1;
-		
+    if (f->mode == WRITE)
+        return -1;
     if (f->empty) //for first time... buffer is empty
     {
         int count;
         count = read(f->handler,f->buffer,BUFF_SIZE);
         if (count <0) return -1;
-        int number = count/size;
-        void* x = (void*)f->cursor;
-        //p = f->cursor;
-        p = x;
-        p = (void*)f->cursor;
-        f->cursor = (f->cursor + count*size);
-        return number;
+        f->end_cursor = (f->cursor + count);
+        f->empty = 0;
     }
-    if ((size*nbelem)<=(f->end_cursor-f->cursor)) // norml case
+    if ((size*nbelem)<=(f->end_cursor-f->cursor)) // normal case
     {
-        p = f->cursor;
+        strncpy(p,f->cursor,size*nbelem);
         f->cursor += size*nbelem;
         return nbelem;
     }
     if  ((size*nbelem)<=(f->buffer+ BUFF_SIZE-f->cursor)) //when we have end of file
     {
-        p = f->cursor;
         int number = f->cursor-f->end_cursor;
-        f->cursor = f->end_cursor;
         number = number/size;
+        strncpy(p,f->cursor,number*size);
+        f->cursor = f->end_cursor;
         return number;
     }
     //if (size <BUFF_SIZE) //
     {
-        strncpy(f->buffer,f->cursor, f->end_cursor-f->cursor);
-        f->end_cursor = f->buffer+size;
-        int count = f->buffer+BUFF_SIZE-f->end_cursor;
-        f->cursor = f->buffer;
-        if(read(f->handler,f->end_cursor,count) < 0 )
-            return -1;
-        if ((size*nbelem)<=(f->end_cursor-f->cursor)) // norml case
+        strncpy(p,f->cursor, f->end_cursor-f->cursor);
+        char* u_pointer = p + (long int)(f->end_cursor-f->cursor);
+        int number_left = size*nbelem - (f->end_cursor-f->cursor);
+        int number_read = f->end_cursor-f->cursor;
+        int count;
+        //
+        while(number_left>0)
         {
-            p = f->cursor;
-            f->cursor += size*nbelem;
-            return nbelem;
-        }
-        if  ((size*nbelem)<=(f->buffer+ BUFF_SIZE-f->cursor)) //when we have end of file
-        {
-            p = f->cursor;
-            int number = f->cursor-f->end_cursor;
-            f->cursor = f->end_cursor;
-            number = number/size;
-            return number;
-        }
-        else
-        {
-            p = f->cursor;
-            return BUFF_SIZE/size;
-            f->cursor = f->buffer + BUFF_SIZE;
+            f->cursor = f->buffer;
+            count = read(f->handler,f->cursor,BUFF_SIZE);
+            if(count < 0) return -1;
+            f->end_cursor = f->buffer+count;
+            if ((number_left)<=(f->end_cursor-f->cursor)) // norml case
+            {
+                strncpy(u_pointer,f->cursor, number_left);
+                u_pointer = f->cursor;
+                f->cursor += number_left;
+                return nbelem;
+            }
+            if  ((number_left)<=(f->buffer+ BUFF_SIZE-f->cursor)) //when we have end of file
+            {
+                strncpy(u_pointer,f->cursor,f->end_cursor-f->cursor);
+                int number = f->cursor-f->end_cursor;
+                f->cursor = f->end_cursor;
+                number_read += number;
+                return number_read/size;
+            }
+            strncpy(u_pointer,f->cursor,BUFF_SIZE);
+            u_pointer += BUFF_SIZE;
+            number_left -= BUFF_SIZE;
         }
     }
+    return -1;
 }
 
-/* int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f) {
-	if (f->mode == WRITE)
-		return -1;
-
-	size *= nbelem;
-	size_t pos = 0;
-	while (f->len < size) {
-		pos += f->len;
-		size -= f->len;
-		memcpy(p + pos, f->buffer + f->pos, f->len);
-
-		// fill buffer
-		int r = read(f->handler, f->buffer, BUFF_SIZE);
-		if (r < 0) {
-			return -1;
-		} else if (r == 0) {
-			f->empty = 1;
-			return 0;
-		}
-		f->pos = 0;
-		f->len = r;
-	}
-
-	memcpy(p + pos, f->buffer + f->pos, size);
-	f->pos += size;
-	f->len -= size;
-	pos += size;
-
-	size /= nbelem;
-	return pos / size;
-}*/
 
 int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 {	
