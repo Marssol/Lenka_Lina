@@ -148,3 +148,62 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 	return pos / taille;
 	
 }
+/*
+int my_fprintf(MY_FILE *f, const char *format) {
+	va_list ap;
+	va_start(ap, format);
+
+	size_t written = 0;
+
+	do {
+		const char* n = format;
+		while (*n != '%' && *n != '\0')
+			++n;
+
+		size_t s = n - format;
+		int r = my_fwrite((void*)format, 1, s, f);
+		if (r < 0)
+			return -1;
+		written += r;
+
+		if (*n == '\0') {
+			va_end(ap);
+			return written;
+		}
+
+		++n;
+		switch (*n) {
+			case 'c': {
+				//char c = va_arg(ap, char);
+				char c = va_arg(ap, int);
+				if (my_fwrite(&c, 1, 1, f) < 0)
+					return -1;
+				written += 1;
+				break;
+			}
+			case 's': {
+				char* s = va_arg(ap, char*);
+				size_t l = strlen(s);
+				if (my_fwrite(s, 1, l, f) < 0)
+					return -1;
+				written += l;
+				break;
+			}
+			case 'd': {
+				int d = va_arg(ap, int);
+				char s[16];
+				size_t l = sprintf(s, "%d", d);
+				if (my_fwrite(s, 1, l, f) < 0)
+					return -1;
+				written += l;
+				break;
+			}
+		}
+		format = n + 1;
+	} while (*format != '\0');
+
+	va_end(ap);
+	return written;
+}
+*/
+
