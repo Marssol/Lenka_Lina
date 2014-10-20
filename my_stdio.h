@@ -20,6 +20,7 @@ typedef struct my_file
     int empty;
     size_t pos;
     size_t len;
+    int eof;
 
 }MY_FILE;
 //Opens an access to a file, where name is the path of the file and mode is either ”r” for read or ”w” for

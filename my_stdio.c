@@ -13,6 +13,7 @@ MY_FILE* my_fopen(char *name, char *mode)
     my_file->empty = 1;
     my_file->cursor = my_file->buffer;
     my_file->end_cursor = my_file->buffer;
+    my_file->eof = 0;
 
     switch(*mode)
     {
@@ -77,6 +78,7 @@ int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f)
         number = number/size;
         strncpy(p,f->cursor,number*size);
         f->cursor = f->end_cursor;
+        f->eof = 1;
         return number;
     }
     //if (size <BUFF_SIZE) //
@@ -106,6 +108,7 @@ int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f)
                 int number = f->cursor-f->end_cursor;
                 f->cursor = f->end_cursor;
                 number_read += number;
+                f->eof = 1;
                 return number_read/size;
             }
             strncpy(u_pointer,f->cursor,BUFF_SIZE);
@@ -148,6 +151,12 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 	return pos / taille;
 	
 }
+
+int my_feof(MY_FILE *f)
+{
+    return f->eof;
+}
+
 /*
 int my_fprintf(MY_FILE *f, const char *format) {
 	va_list ap;
