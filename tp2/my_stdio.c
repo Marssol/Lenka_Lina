@@ -4,6 +4,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <stdio.h>
 #define BUFF_SIZE 5
 
 MY_FILE* my_fopen(char *name, char *mode)
@@ -127,7 +130,7 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 	
 	taille *= nbelem;
 	size_t pos = 0;
-	while (BUFF_SIZE - f->len - f->pos < size) {
+    while (BUFF_SIZE - f->len - f->pos < taille) {
 		// fill buffer entirely
 		size_t s = BUFF_SIZE - f->len - f->pos;
 		memcpy(f->buffer + f->pos, p + pos, s);
@@ -155,6 +158,41 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 int my_feof(MY_FILE *f)
 {
     return f->eof;
+}
+
+int my_fprintf(MY_FILE *f, const char *format, ...)
+{
+    va_list args;
+    va_start(args,format);
+    int i = 0;
+    char* xchar[10];
+    int xint;
+    while( format[i]!='\0')
+    {
+        if(format[i]!='%') my_fwrite(format+i,1,1,f);
+        else
+        {
+            i++;
+            switch(format[i])
+            {
+                case 'd':
+                    xint = va_arg(args, int);
+                    int x = sprintf(xchar,"%d",xint);
+                    //itoa(xint,&xchar,10);
+                    my_fwrite(xchar,1,1,f);
+                    break;
+                case 's':
+                    break;
+                case 'c':
+                    xchar[0] = va_arg(args, int);
+                    my_fwrite(xchar,1,1,f);
+                    break;
+                default:return;
+            }
+        }
+        i++;
+    }
+    va_end(args);
 }
 
 /*

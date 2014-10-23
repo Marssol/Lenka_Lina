@@ -43,6 +43,6 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f);
 //Returns 1 if an end-of-file has been encountered during a previous read and 0 otherwise.
 int my_feof(MY_FILE *f);
 
-int my_fprintf(MY_FILE *f, const char *format);
+int my_fprintf(MY_FILE *f, const char *format, ...);
 
 #endif // MY_STDIO_H
