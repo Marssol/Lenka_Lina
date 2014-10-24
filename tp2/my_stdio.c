@@ -167,6 +167,8 @@ int my_fprintf(MY_FILE *f, const char *format, ...)
     int i = 0;
     char* xchar[10];
     int xint;
+    char* xstring;
+    int x;
     while( format[i]!='\0')
     {
         if(format[i]!='%') my_fwrite(format+i,1,1,f);
@@ -177,11 +179,13 @@ int my_fprintf(MY_FILE *f, const char *format, ...)
             {
                 case 'd':
                     xint = va_arg(args, int);
-                    int x = sprintf(xchar,"%d",xint);
-                    //itoa(xint,&xchar,10);
-                    my_fwrite(xchar,1,1,f);
+                    x = sprintf(xchar,"%d",xint);
+                    my_fwrite(xchar,1,x,f);
                     break;
                 case 's':
+                    xstring = va_arg(args,char*);
+                    x = strlen(xstring);
+                    my_fwrite(xstring,1,x,f);
                     break;
                 case 'c':
                     xchar[0] = va_arg(args, int);
@@ -194,6 +198,7 @@ int my_fprintf(MY_FILE *f, const char *format, ...)
     }
     va_end(args);
 }
+
 
 /*
 int my_fprintf(MY_FILE *f, const char *format) {
