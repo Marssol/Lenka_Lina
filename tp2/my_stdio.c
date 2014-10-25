@@ -26,16 +26,16 @@ MY_FILE* my_fopen(char *name, char *mode)
         if(my_file->handler<0)return NULL;
         //my_file->cursor = buffer;
         my_file->mode = READ;
-        my_file->pos = 0;
-        my_file->len = 0;
+        //my_file->pos = 0;
+       // my_file->len = 0;
         return my_file;
     case 'w':
         my_file->handler = open(name,O_CREAT|O_WRONLY|O_TRUNC, 0644);
         if (my_file->handler < 0) return NULL;
         //my_file->cursor = buffer;
         my_file->mode = WRITE;
-        my_file->pos = 0;
-        my_file->len = 0;
+        //my_file->pos = 0;
+        //my_file->len = 0;
         return my_file;
     default:
         return NULL;
@@ -47,7 +47,8 @@ int my_fclose(MY_FILE *f)
     if (f->mode==WRITE)
     {
         //TO DO:write the buffer into file
-        int a = write(f->handler, f->buffer, f->len);
+        int x = f->end_cursor - f->buffer;
+        int a = write(f->handler, f->buffer, f->end_cursor - f->buffer);
         //f->len = 0;
         //f->pos = 0:
     }
@@ -125,7 +126,7 @@ int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f)
 }
 
 
-int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
+/*int xmy_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 {	
 	if (f->mode == READ)
 		return -1;
@@ -156,8 +157,37 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 	taille /= nbelem;
 	return pos / taille;
 	
-}
+}*/
+int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
+{
 
+    if (f->mode == READ)
+        return -1;
+
+    taille *= nbelem;
+    int act_taille = taille;
+    size_t pos = 0;
+    while (f->buffer + BUFF_SIZE - f->end_cursor <= act_taille) {
+        // fill buffer entirely
+        size_t s = f->buffer + BUFF_SIZE - f->end_cursor;
+        memcpy(f->end_cursor, p + pos, s);
+        pos += s;
+        act_taille -= s;
+
+        // flush it
+        int r = write(f->handler, f->buffer, BUFF_SIZE);
+        //if (r < f->len)
+        //    return r;
+        f->end_cursor = f->buffer;
+    }
+
+    memcpy(f->end_cursor, p + pos, taille);
+    f->end_cursor += act_taille;
+    pos += act_taille;
+
+    taille /= nbelem;
+    return pos / taille;
+}
 int my_feof(MY_FILE *f)
 {
     return f->eof;

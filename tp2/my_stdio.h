@@ -18,8 +18,8 @@ typedef struct my_file
     int handler;
     char mode;
     int empty;
-    size_t pos;
-    size_t len;
+//    size_t pos;
+//    size_t len;
     int eof;
 
 }MY_FILE;
