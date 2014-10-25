@@ -7,7 +7,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
-#define BUFF_SIZE 5
+#define BUFF_SIZE 10
 #define INT_DIGIT 7
 
 MY_FILE* my_fopen(char *name, char *mode)
@@ -78,7 +78,8 @@ int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f)
     }
     if  ((size*nbelem)<=(f->buffer+ BUFF_SIZE-f->cursor)) //when we have end of file
     {
-        int number = f->cursor-f->end_cursor;
+        //int number = f->cursor-f->end_cursor;
+        int number = f->end_cursor-f->cursor;
         number = number/size;
         strncpy(p,f->cursor,number*size);
         f->cursor = f->end_cursor;
@@ -130,13 +131,14 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 		return -1;
 	
 	taille *= nbelem;
+    int act_taille = taille;
 	size_t pos = 0;
-    while (BUFF_SIZE - f->len - f->pos < taille) {
+    while (BUFF_SIZE - f->len - f->pos < act_taille) {
 		// fill buffer entirely
-		size_t s = BUFF_SIZE - f->len - f->pos;
+        size_t s = BUFF_SIZE - f->len;
 		memcpy(f->buffer + f->pos, p + pos, s);
 		pos += s;
-		taille -= s;
+        act_taille -= s;
 		
 		// flush it
 		int r = write(f->handler, f->buffer, BUFF_SIZE);
@@ -147,9 +149,9 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 	}
 
 	memcpy(f->buffer + f->pos, p + pos, taille);
-	f->len += taille;
-	f->pos += taille;
-	pos += taille;
+    f->len += act_taille;
+    f->pos += act_taille;
+    pos += act_taille;
 
 	taille /= nbelem;
 	return pos / taille;
