@@ -11,7 +11,7 @@ all: $(EXE)
 
 .SECONDEXPANSION:
 ${MYLIB}: $$(patsubst lib%.so, %.c, $$@)
-	$(CC) -shared -fPIC -o $@ $(patsubst lib%.so,%.c, $@)
+	$(CC) $(CFLAGS) -shared -fPIC -o $@ $(patsubst lib%.so,%.c, $@)
 
 .SECONDEXPANSION:
 ${EXE}: $$(patsubst %, %.o, $$@) $(MYLIB)
@@ -20,8 +20,8 @@ ${EXE}: $$(patsubst %, %.o, $$@) $(MYLIB)
 
 my_stdio_test:test1.o my_stdio.o 
 	$(CC) $(CFLAGS) $^ -o $@
-	#./my_stdio_test infile outfile
-	#diff infile outfile
+	./my_stdio_test infile outfile
+	cmp infile outfile > std_check.txt
 
 bench:
 	LD_PRELOAD=./libmy_stdio.so ps 2>&1 > /dev/null

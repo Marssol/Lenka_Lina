@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#define BUFF_SIZE 10
+#define BUFF_SIZE 1024
 #define INT_DIGIT 7
 
 MY_FILE* my_fopen(char *name, char *mode)
@@ -24,7 +24,7 @@ MY_FILE* my_fopen(char *name, char *mode)
     switch(*mode)
     {
     case 'r':
-        my_file->handler = open(name,O_CREAT|O_RDONLY);
+        my_file->handler = open(name,O_RDONLY);
         if(my_file->handler<0)return NULL; // file opening wasn`t succesfull
         my_file->mode = READ;
         return my_file;
@@ -131,7 +131,7 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
         f->end_cursor = f->buffer;
     }
 
-    memcpy(f->end_cursor, p + pos, taille);
+    memcpy(f->end_cursor, p + pos, act_taille);
     f->end_cursor += act_taille;
     pos += act_taille;
 
