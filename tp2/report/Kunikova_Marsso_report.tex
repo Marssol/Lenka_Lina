@@ -91,17 +91,15 @@ During implementation of this function we needed to deal with list of arguments 
 Function is very similar to previous one but it is a bit more complicated. In case of \%s, for example, we do not know the length of string at the beginning. We read characters from file one by one and we look for white characters. When we reach one, we assume it is the end of string. We add \textbackslash 0 to the end and we give it back to user. For \%d it is similar. We recognize end of the number when we read first non-digit character.
 \section{Evaluation}
 \paragraph{}
-For evaluate our library, we use one test he copie one file in an
-other file buffered for our library and we write the same test 
-but using the standard open, read and write.
+To evaluate our library, we used the test that copies one file to an other file using our library (buffered write and read) and did the same  using the standard system calls open, read and write.
 \paragraph{}
-We evaluate in the begining the time for copy two file with our library, 
-and with the standard open, read and write. We have also one ratio~: 
+We evaluated at the beginning the time required for coping two files with our library,  
+and with the standard system calls open, read and write. We have also one ratio~: 
 \begin{equation}
 \left(\frac{My\_stdio\_time\_execution}{Standar\_Read\_Write\_time\_execution} \right)  \quad
 \end{equation}
 \paragraph{}
-We calculate the time of the execution with a script time.sh. We can see
+We calculated the time of the execution with a script time.sh. We can see
 
 \begin{tabular}{|R{2cm}|C{2cm}|L{1.5cm}|L{1.5cm}|}
 \hline \rowcolor{lightgray}Library & Time (microsecondes) & Size of file\\
@@ -125,45 +123,17 @@ We calculate the time of the execution with a script time.sh. We can see
 \begin{figure}[ht]
 \center 
 %\includegraphics[width=0.8\linewidth]{gcc_best_fit.png}
-\caption{Memory requested and memory used with best fit strategy}
+
 \label{best}
 \end{figure}
 
-\subsection{Table with fragmentation level of differents programs}
+\newpage
 
-\begin{tabular}{|R{2cm}|C{1.5cm}|L{1.5cm}|L{1.5cm}|}
-\hline \rowcolor{lightgray}program & worst\_fit & best\_fit & first\_fit \\
-\hline  ls & 1.83 & 1.83 & 2.48 \\
-\hline  wc & 0.96 & 0.96 & 0.96 \\
-\hline  ps & 1.37 & 1.36 & 1.37 \\
-\hline  hostname & 2.42 & 2.42 & 3.23 \\
-\hline 
-\end{tabular}
 
 \section{Conclusion}
 \paragraph{}
-The goal of this project was to get familiar with the concept of memory 
-managment and I think we succeeded. We managed to implement a simple 
-version of memory allocator which allows users to allocate and free memory.
+In this project we implemented library that provided high level interface to same basic input-output operations. We tested its behavior and compared program using it and program using only low level system calls. We showed that our library reduces the number of needed system calls, which largely affects the speed of the program. Both static and dynamic version of our library were created. 
 \paragraph{} 
-During the implementation we had to deal with several problems. For 
-example we needed to find a way on how to determine positions of free 
-blocks when we do not have linked lists of them, or think about the 
-algorithm that helps us merge contiguous blocks of free space. Moreover, 
-we implemented the three most common algorithms for finding an appropriate 
-free block (first-fit, best-fit and worse-fit). We are now able to describe 
-pros and cons for each of them.
-\paragraph{}
-In the second part, we added some other features to our memory allocator. 
-All of them related to security checks. Now we know that implementing 
-functions for free and alloc memory is not enough and we also need 
-to deal with situations where users (on purpose or by chance) do not act the 
-way we expect. The control we are making is not perfect but it helps 
-us to deal with many cases that may happen.
-
-\paragraph{}
-Finnaly, we can see an application of our allocator. We can analyse it's
-performance with many apllications like ls, hostname... It was a very 
-interesting project.
+This task required a lot of effort and was very difficult for us to finish, as long as both of us are suffering illness since the beggining of the previous week. We both are excused from the doctor, we sent an e-mail regarding possible postponing of submitting this task and the second task, that we needed to deliver. As long as we did not receive an answer, we tried to do our best that our situation allowed us. The report may not be therefore perfect, but we hope our situation will be taken into account and hope for your understanding.
 
  \end{document}
