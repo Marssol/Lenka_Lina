@@ -117,7 +117,6 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 
     if (f->mode == READ)
         return -1;
-    //int char_written = 0;
     taille *= nbelem;
     int act_taille = taille;
     size_t pos = 0;
@@ -127,11 +126,8 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
         memcpy(f->end_cursor, p + pos, s);
         pos += s;
         act_taille -= s;
-        //char_written += s;
         // flush it
-        int r = write(f->handler, f->buffer, BUFF_SIZE);
-        //if (r < char_written)
-            //return r;
+        write(f->handler, f->buffer, BUFF_SIZE);
         f->end_cursor = f->buffer;
     }
 
