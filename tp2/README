@@ -1,0 +1,18 @@
+//Compilation
+	>make 
+	>export LD_LIBRARY_PATH="" : your path
+	For example in our computer :
+	>export LD_LIBRARY_PATH=$HOME/Mosig/Os/tp3/Lenka_Lina/Lenka_Lina/tp2
+
+//Execution test
+	>./test1 infile outfile
+
+//Evaluate
+	//Time for the execution
+		>gcc -W -Wall -o test1_bis test1_bis.c
+		>chmod u+x time.sh
+		>./time.sh
+	//Number of sycall
+		>gcc -W -Wall -o test1_bis test1_bis.c
+		>strace -c ./test1 infile outfile 
+		>strace -c ./test1_bis infile outfile

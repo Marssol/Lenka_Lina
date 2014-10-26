@@ -4,6 +4,7 @@
 
 
 //bufsize 10
+/*
 int main (int argc, char * argv[]) {
     MY_FILE * f1;
     MY_FILE * f2;
@@ -32,9 +33,9 @@ int main (int argc, char * argv[]) {
     my_fclose(f1);
     my_fclose(f2);
     return 0;
-}
+}*/
 
-/*int main (int argc, char * argv[]) {
+int main (int argc, char * argv[]) {
 	MY_FILE * f1;
 	MY_FILE * f2;
 	char c;
@@ -61,4 +62,4 @@ int main (int argc, char * argv[]) {
 	my_fclose(f1);
 	my_fclose(f2);
 	return 0;
-}*/
+}
