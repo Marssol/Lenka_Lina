@@ -75,22 +75,19 @@
 
 
 \section{Implementation}	
-\begin{enumerate}
-\item We initialize the memory with the function memory\_init
-\item We alloc the new block with mem\_alloc like that~:
-	\begin{itemize}
-	\item We find the address of new block allocated with one between
-	 the strategy 3
-	(First fit, Worse fit, best fit). We can choose. Basically, it's first fit.
-	\item We allocate the full block and update list of freeblock
-	\end{itemize}
-\item We can free a block with free\_block~:
-	\begin{itemize}
-	\item We find an adjacent block to the one to be freed and try to merge then
-	\item If no adjacent block~:~create a new block and insert it in the list
-	\end{itemize}
-\end{enumerate}
- 
+\subsection{Struct my\_file}
+ Our structure my\_file consists of buffer in which we temporarily store information that we read from a file or that user tried to write in. We use two pointers that show us in which part of the buffer are valid data. Of course, we need to remember handler we got from the system call write / read. We also have variables to distinguish between read and write mode, to remember if we already met EOF and one that knows whether buffer was already filled or it is empty.  
+ \subsection{my\_fopen}
+ In this function we allocate the memory needed for the whole structure and we initialise all variables. Both pointers will point to the beginning of the buffer. According to the specified mode we open the file with appropriate flags.
+ \subsection{my\_fclose}
+ In this function we need to close the file and free all allocated memory. If the mode of file is set to write, we also need to write the content of the buffer into the file.
+
+ \subsection{my\_fread}
+ At first, the function should check whether the mode is set to read, if not, it returns -1. Then we need to distinguish between different cases. In case it is the first read operation, the buffer is empty and we need to fill it. In case the amount of data the user requests to read is less than data available, it is the simplest case and we just give requested data to the user. Another case is when we meet EOF before expected. It can be detected thanks to the pointer that points to the end of valid data. In this case we just give user less data than he wanted. It can also happen that user wants more than what is disponsible in the buffer. In this case, we give him all we have, we refill the buffer and give him remaining data. We keep refilling data until we get enough.
+
+ \subsection{my\_fwrite}
+ As in the previous function, we should test whether the mode is set to write. If it is, user data will be stored. If there is enough space in the buffer, we just write all user data in. Once the buffer is full, we write its content in a file using actual system call. We keep writing data in and flushing full buffer until all user data are processed.
+
 \section{Safety checks}
 
 \section{Evaluation}
