@@ -88,8 +88,6 @@
  \subsection{my\_fwrite}
  As in the previous function, we should test whether the mode is set to write. If it is, user data will be stored. If there is enough space in the buffer, we just write all user data in. Once the buffer is full, we write its content in a file using actual system call. We keep writing data in and flushing full buffer until all user data are processed.
 
-\section{Safety checks}
-
 \section{Evaluation}
 \paragraph{}
 In the begining the library was static. It's is more fast for access, but 
@@ -132,7 +130,8 @@ text from a file in a other file.
 the number of system call for test1 (Figure \ref{our}) and the 
 test1\_bis (Figure \ref{sys}). We can see for example with our library
 we have 6 calls of write whereas if use directely system function we have
-4936 calls of write. 
+4936 calls of write. Our library is a success, wa have less syscall with 
+our buffered functions. 
 \begin{figure}[ht]
 \center 
 \includegraphics[width=0.85\linewidth]{my_strace.png}
