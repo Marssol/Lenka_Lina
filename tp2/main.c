@@ -16,7 +16,7 @@ int main(void)
     my_fclose(f);
     MY_FILE* f2 = my_fopen("toto2.txt","w");
     //my_fprintf(f2,"aho%cahoj%d",'j',7);
-    my_fprintf(f2,"%d",7);
+    my_fprintf(f2,"%s","ahoj");
     my_fclose(f2);
 
     return 0;

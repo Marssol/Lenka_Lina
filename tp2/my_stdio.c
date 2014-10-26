@@ -7,7 +7,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
-#define BUFF_SIZE 5
+#define BUFF_SIZE 10
+#define INT_DIGIT 7
 
 MY_FILE* my_fopen(char *name, char *mode)
 {
@@ -25,16 +26,16 @@ MY_FILE* my_fopen(char *name, char *mode)
         if(my_file->handler<0)return NULL;
         //my_file->cursor = buffer;
         my_file->mode = READ;
-        my_file->pos = 0;
-        my_file->len = 0;
+        //my_file->pos = 0;
+       // my_file->len = 0;
         return my_file;
     case 'w':
         my_file->handler = open(name,O_CREAT|O_WRONLY|O_TRUNC, 0644);
         if (my_file->handler < 0) return NULL;
         //my_file->cursor = buffer;
         my_file->mode = WRITE;
-        my_file->pos = 0;
-        my_file->len = 0;
+        //my_file->pos = 0;
+        //my_file->len = 0;
         return my_file;
     default:
         return NULL;
@@ -46,7 +47,8 @@ int my_fclose(MY_FILE *f)
     if (f->mode==WRITE)
     {
         //TO DO:write the buffer into file
-        int a = write(f->handler, f->buffer, f->len);
+        int x = f->end_cursor - f->buffer;
+        int a = write(f->handler, f->buffer, f->end_cursor - f->buffer);
         //f->len = 0;
         //f->pos = 0:
     }
@@ -77,7 +79,8 @@ int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f)
     }
     if  ((size*nbelem)<=(f->buffer+ BUFF_SIZE-f->cursor)) //when we have end of file
     {
-        int number = f->cursor-f->end_cursor;
+        //int number = f->cursor-f->end_cursor;
+        int number = f->end_cursor-f->cursor;
         number = number/size;
         strncpy(p,f->cursor,number*size);
         f->cursor = f->end_cursor;
@@ -123,19 +126,20 @@ int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f)
 }
 
 
-int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
+/*int xmy_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 {	
 	if (f->mode == READ)
 		return -1;
 	
 	taille *= nbelem;
+    int act_taille = taille;
 	size_t pos = 0;
-    while (BUFF_SIZE - f->len - f->pos < taille) {
+    while (BUFF_SIZE - f->len - f->pos < act_taille) {
 		// fill buffer entirely
-		size_t s = BUFF_SIZE - f->len - f->pos;
+        size_t s = BUFF_SIZE - f->len;
 		memcpy(f->buffer + f->pos, p + pos, s);
 		pos += s;
-		taille -= s;
+        act_taille -= s;
 		
 		// flush it
 		int r = write(f->handler, f->buffer, BUFF_SIZE);
@@ -146,15 +150,44 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 	}
 
 	memcpy(f->buffer + f->pos, p + pos, taille);
-	f->len += taille;
-	f->pos += taille;
-	pos += taille;
+    f->len += act_taille;
+    f->pos += act_taille;
+    pos += act_taille;
 
 	taille /= nbelem;
 	return pos / taille;
 	
-}
+}*/
+int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
+{
 
+    if (f->mode == READ)
+        return -1;
+
+    taille *= nbelem;
+    int act_taille = taille;
+    size_t pos = 0;
+    while (f->buffer + BUFF_SIZE - f->end_cursor <= act_taille) {
+        // fill buffer entirely
+        size_t s = f->buffer + BUFF_SIZE - f->end_cursor;
+        memcpy(f->end_cursor, p + pos, s);
+        pos += s;
+        act_taille -= s;
+
+        // flush it
+        int r = write(f->handler, f->buffer, BUFF_SIZE);
+        //if (r < f->len)
+        //    return r;
+        f->end_cursor = f->buffer;
+    }
+
+    memcpy(f->end_cursor, p + pos, taille);
+    f->end_cursor += act_taille;
+    pos += act_taille;
+
+    taille /= nbelem;
+    return pos / taille;
+}
 int my_feof(MY_FILE *f)
 {
     return f->eof;
@@ -167,6 +200,8 @@ int my_fprintf(MY_FILE *f, const char *format, ...)
     int i = 0;
     char* xchar[10];
     int xint;
+    char* xstring;
+    int x;
     while( format[i]!='\0')
     {
         if(format[i]!='%') my_fwrite(format+i,1,1,f);
@@ -177,11 +212,13 @@ int my_fprintf(MY_FILE *f, const char *format, ...)
             {
                 case 'd':
                     xint = va_arg(args, int);
-                    int x = sprintf(xchar,"%d",xint);
-                    //itoa(xint,&xchar,10);
-                    my_fwrite(xchar,1,1,f);
+                    x = sprintf(xchar,"%d",xint);
+                    my_fwrite(xchar,1,x,f);
                     break;
                 case 's':
+                    xstring = va_arg(args,char*);
+                    x = strlen(xstring);
+                    my_fwrite(xstring,1,x,f);
                     break;
                 case 'c':
                     xchar[0] = va_arg(args, int);
@@ -194,63 +231,72 @@ int my_fprintf(MY_FILE *f, const char *format, ...)
     }
     va_end(args);
 }
-
-/*
-int my_fprintf(MY_FILE *f, const char *format) {
-	va_list ap;
-	va_start(ap, format);
-
-	size_t written = 0;
-
-	do {
-		const char* n = format;
-		while (*n != '%' && *n != '\0')
-			++n;
-
-		size_t s = n - format;
-		int r = my_fwrite((void*)format, 1, s, f);
-		if (r < 0)
-			return -1;
-		written += r;
-
-		if (*n == '\0') {
-			va_end(ap);
-			return written;
-		}
-
-		++n;
-		switch (*n) {
-			case 'c': {
-				//char c = va_arg(ap, char);
-				char c = va_arg(ap, int);
-				if (my_fwrite(&c, 1, 1, f) < 0)
-					return -1;
-				written += 1;
-				break;
-			}
-			case 's': {
-				char* s = va_arg(ap, char*);
-				size_t l = strlen(s);
-				if (my_fwrite(s, 1, l, f) < 0)
-					return -1;
-				written += l;
-				break;
-			}
-			case 'd': {
-				int d = va_arg(ap, int);
-				char s[16];
-				size_t l = sprintf(s, "%d", d);
-				if (my_fwrite(s, 1, l, f) < 0)
-					return -1;
-				written += l;
-				break;
-			}
-		}
-		format = n + 1;
-	} while (*format != '\0');
-
-	va_end(ap);
-	return written;
+int my_fscanf(MY_FILE *f, char *format, ...)
+{
+    va_list args;
+    va_start(args,format);
+    int i = 0;
+    int elem_read = 0;
+    char xchar[INT_DIGIT];
+    char* xxchar;
+    int xint;
+    int* pint;
+    char* xstring;
+    int x;
+    int counter;
+    while( format[i]!='\0')
+    {
+        if(format[i]!='%')
+        {
+            my_fread(xchar,1,1,f);
+            if (xchar != format[i]) return elem_read;
+        }
+        else
+        {
+            i++;
+            switch(format[i])
+            {
+                case 'd':
+                    counter = 0;
+                    do
+                    {
+                        my_fread(xchar,1,1,f);
+                        counter++;
+                    }while(isdigit(xchar));
+                    //unget
+                    counter--;
+                    if(counter>INT_DIGIT) break;
+                    sscanf(xchar,"%d",&xint);
+                    pint =va_arg(args,int*);
+                    *pint = xint;
+                    elem_read++;
+                    break;
+                case 's':
+                    xstring = va_arg(args,char*);
+                    int j =0;
+                    do
+                    {
+                        my_fread(xstring+j,1,1,f);
+                        j++;
+                    }while(xstring[j-1]!=' ');
+                    elem_read++;
+                    xstring[j] = '\0';
+                    break;
+                case 'c':
+                    my_fread(xchar,1,1,f);
+                    if (xchar==EOF)break;
+                    xxchar = va_arg(args,char*);
+                    *xxchar = *xchar;
+                    break;
+                default:return;
+            }
+        }
+        i++;
+    }
+    va_end(args);
 }
-*/
+
+
+
+
 

@@ -18,8 +18,8 @@ typedef struct my_file
     int handler;
     char mode;
     int empty;
-    size_t pos;
-    size_t len;
+//    size_t pos;
+//    size_t len;
     int eof;
 
 }MY_FILE;
@@ -44,5 +44,6 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f);
 int my_feof(MY_FILE *f);
 
 int my_fprintf(MY_FILE *f, const char *format, ...);
+int my_fscanf(MY_FILE *f, char *format, ...);
 
 #endif // MY_STDIO_H
