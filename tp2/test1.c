@@ -27,7 +27,7 @@ int main (int argc, char * argv[]) {
     result = my_fread(&buff, 1, 20, f1);
     result = my_fwrite(&buff, 1, 20, f2);
     result = my_fread(&buff, 1, 4, f1);
-    result = my_fwrite(&buff, 1, result-1, f2);
+    result = my_fwrite(&buff, 1, result, f2);
 
     my_fclose(f1);
     my_fclose(f2);
