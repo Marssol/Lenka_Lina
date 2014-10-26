@@ -20,8 +20,8 @@ ${EXE}: $$(patsubst %, %.o, $$@) $(MYLIB)
 
 my_stdio_test:test1.o my_stdio.o 
 	$(CC) $(CFLAGS) $^ -o $@
-	./my_stdio_test infile outfile
-	diff infile outfile
+	#./my_stdio_test infile outfile
+	#diff infile outfile
 
 bench:
 	LD_PRELOAD=./libmy_stdio.so ps 2>&1 > /dev/null
