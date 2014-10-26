@@ -92,9 +92,14 @@
 
 \section{Evaluation}
 \paragraph{}
-For evaluate our library, we use one test he copie one file in an
+In the begining the library was static. It's is more fast for access, but 
+the library take many place in memory, and we conclude it's more efficient
+with a dynamic library. 
+\paragraph{}
+For evaluate our dynamic library, we use one test he copie one file in an
 other file buffered for our library and we write the same test 
 but using the standard open, read and write.
+\subsection{Evaluation of the execution time}
 \paragraph{}
 We evaluate in the begining the time for copy two file with our library, 
 and with the standard open, read and write. We have also one ratio~: 
@@ -105,7 +110,6 @@ and with the standard open, read and write. We have also one ratio~:
 We calculate the time of the execution with a script time.sh. We can see
 for example in table 5.1, the ratio is 4/36. Our library is also 9 time
 more fast. 
-
 \subsection{Table with time execution of two differents test}
 \begin{tabular}{|R{2cm}|C{2cm}|L{1.5cm}|L{1.5cm}|}
 \hline \rowcolor{lightgray}Library & Time (microsecondes) & Size of file\\
@@ -114,35 +118,44 @@ more fast.
 \hline 
 \end{tabular}
 
+\subsection{Evaluation on the number of system call}
+\paragraph{}
+A system call is very expensive. It's why we implemented this library, when
+we try ti reduce the number of the system call thanks to a buffer. 
+Now we would like check if the number of system call of all library is 
+really different then we use standar sytem functions.
+\paragraph{}
+With two same test, test1.c and test1\_bis.c. One test use our dynamic library, 
+and test1\_bis.c use sytems functions. This test have the same goal, copie
+text from a file in a other file.
+\paragraph{} With the program strace we explore
+the number of system call for test1 (Figure \ref{our}) and the 
+test1\_bis (Figure \ref{sys}). We can see for example with our library
+we have 6 calls of write whereas if use directely system function we have
+4936 calls of write. 
 \begin{figure}[ht]
 \center 
 \includegraphics[width=0.85\linewidth]{my_strace.png}
 \caption{Number of system call of our library}
-\label{first}
+\label{our}
 \end{figure}
 \begin{figure}[ht]
 \center 
 \includegraphics[width=0.85\linewidth]{syscall_strace.png}
 \caption{Number of system call with read and write}
-\label{worst}
-\end{figure}
-\begin{figure}[ht]
-\center 
-%\includegraphics[width=0.8\linewidth]{gcc_best_fit.png}
-\caption{Memory requested and memory used with best fit strategy}
-\label{best}
+\label{sys}
 \end{figure}
 
-\subsection{Table with fragmentation level of differents programs}
-
-\begin{tabular}{|R{2cm}|C{1.5cm}|L{1.5cm}|L{1.5cm}|}
-\hline \rowcolor{lightgray}program & worst\_fit & best\_fit & first\_fit \\
-\hline  ls & 1.83 & 1.83 & 2.48 \\
-\hline  wc & 0.96 & 0.96 & 0.96 \\
-\hline  ps & 1.37 & 1.36 & 1.37 \\
-\hline  hostname & 2.42 & 2.42 & 3.23 \\
+\subsection{Table with number of system call by test1 and test1\_bis}
+\begin{tabular}{|R{2cm}|C{2cm}|L{2cm}|L{2cm}|}
+\hline \rowcolor{lightgray}Test & System function & Number\\
+\hline  Test1 & read & 7 \\
+\hline  Test1\_bis  & read & 4937 \\
+\hline  Test1 & write & 6 \\
+\hline  Test1\_bis  & write & 4936 \\
 \hline 
 \end{tabular}
+
 
 \section{Conclusion}
 \paragraph{}
