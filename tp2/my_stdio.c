@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #define BUFF_SIZE 10
 #define INT_DIGIT 7
 
@@ -62,13 +63,13 @@ int my_fread(void *p, size_t size, size_t nbelem, MY_FILE *f)
         f->end_cursor = (f->cursor + count);
         f->empty = 0;
     }
-    if ((size*nbelem)<=(f->end_cursor-f->cursor)) // normal case, when everything we want to read is in buffer
+    if ((unsigned int)(size*nbelem)<=(f->end_cursor-f->cursor)) // normal case, when everything we want to read is in buffer
     {
         strncpy(p,f->cursor,size*nbelem);
         f->cursor += size*nbelem;
         return nbelem;
     }
-    if  ((size*nbelem)<=(f->buffer+ BUFF_SIZE-f->cursor)) // when we reach end of file
+    if  ((unsigned int)(size*nbelem)<=(f->buffer+ BUFF_SIZE-f->cursor)) // when we reach end of file
     {
         int number = f->end_cursor-f->cursor;
         number = number/size;
@@ -116,7 +117,7 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
 
     if (f->mode == READ)
         return -1;
-
+    int char_written;
     taille *= nbelem;
     int act_taille = taille;
     size_t pos = 0;
@@ -126,11 +127,11 @@ int my_fwrite(void *p, size_t taille, size_t nbelem, MY_FILE *f)
         memcpy(f->end_cursor, p + pos, s);
         pos += s;
         act_taille -= s;
-
+        char_written += s;
         // flush it
         int r = write(f->handler, f->buffer, BUFF_SIZE);
-        //if (r < f->len)
-        //    return r;
+        if (r < char_written)
+            return r;
         f->end_cursor = f->buffer;
     }
 
@@ -146,12 +147,13 @@ int my_feof(MY_FILE *f)
     return f->eof;
 }
 
-int my_fprintf(MY_FILE *f, const char *format, ...)
+int my_fprintf(MY_FILE *f, char *format, ...)
 {
     va_list args;
     va_start(args,format);
+    int succ_arg = 0;
     int i = 0;
-    char* xchar[10];
+    char xchar[10];
     int xint;
     char* xstring;
     int x;
@@ -167,42 +169,45 @@ int my_fprintf(MY_FILE *f, const char *format, ...)
                     xint = va_arg(args, int);
                     x = sprintf(xchar,"%d",xint);
                     my_fwrite(xchar,1,x,f);
+                    succ_arg++;
                     break;
                 case 's':
                     xstring = va_arg(args,char*);
                     x = strlen(xstring);
                     my_fwrite(xstring,1,x,f);
+                    succ_arg++;
                     break;
                 case 'c':
                     xchar[0] = va_arg(args, int);
                     my_fwrite(xchar,1,1,f);
+                    succ_arg++;
                     break;
-                default:return;
+                default:return -1;
             }
         }
         i++;
     }
     va_end(args);
+    return succ_arg;
 }
 int my_fscanf(MY_FILE *f, char *format, ...)
 {
     va_list args;
     va_start(args,format);
+    int succ_arg = 0;
     int i = 0;
-    int elem_read = 0;
     char xchar[INT_DIGIT];
     char* xxchar;
     int xint;
     int* pint;
     char* xstring;
-    int x;
     int counter;
     while( format[i]!='\0')
     {
         if(format[i]!='%')
         {
             my_fread(xchar,1,1,f);
-            if (xchar != format[i]) return elem_read;
+            if (xchar[0] != format[i]) return succ_arg;
         }
         else
         {
@@ -222,7 +227,7 @@ int my_fscanf(MY_FILE *f, char *format, ...)
                     sscanf(xchar,"%d",&xint);
                     pint =va_arg(args,int*);
                     *pint = xint;
-                    elem_read++;
+                    succ_arg++;
                     break;
                 case 's':
                     xstring = va_arg(args,char*);
@@ -232,21 +237,23 @@ int my_fscanf(MY_FILE *f, char *format, ...)
                         my_fread(xstring+j,1,1,f);
                         j++;
                     }while(xstring[j-1]!=' ');
-                    elem_read++;
+                    succ_arg++;
                     xstring[j] = '\0';
                     break;
                 case 'c':
                     my_fread(xchar,1,1,f);
-                    if (xchar==EOF)break;
+                    if (xchar[0]==EOF)break;
                     xxchar = va_arg(args,char*);
                     *xxchar = *xchar;
+                    succ_arg++;
                     break;
-                default:return;
+                default:return -1;
             }
         }
         i++;
     }
     va_end(args);
+    return succ_arg;
 }
 
 
