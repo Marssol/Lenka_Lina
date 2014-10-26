@@ -93,22 +93,37 @@
  
 \section{Safety checks}
 
-\section{Performance evaluation}
-
+\section{Evaluation}
+\paragraph{}
+For evaluate our library, we use one test he copie one file in an
+other file buffered for our library and we write the same test 
+but using the standard open, read and write.
+\paragraph{}
+We evaluate in the begining the time for copy two file with our library, 
+and with the standard open, read and write. We have also one ratio~: 
 \begin{equation}
-\left(\frac{Requested\_memory}{Sum\_of\_memory\_used} \right)  \quad
+\left(\frac{My\_stdio\_time\_execution}{Standar\_Read\_Write\_time\_execution} \right)  \quad
 \end{equation}
+\paragraph{}
+We calculate the time of the execution with a script time.sh. We can see
+
+\begin{tabular}{|R{2cm}|C{2cm}|L{1.5cm}|L{1.5cm}|}
+\hline \rowcolor{lightgray}Library & Time (microsecondes) & Size of file\\
+\hline  libmy\_sdio & 4 & 8.0K \\
+\hline  Standar  & 36 & 8.0K \\
+\hline 
+\end{tabular}
 
 \begin{figure}[ht]
 \center 
-%\includegraphics[width=0.8\linewidth]{gcc_first_fit.png}
-\caption{Memory requested and memory used with first fit strategy}
+\includegraphics[width=0.85\linewidth]{my_strace.png}
+\caption{Number of system call of our library}
 \label{first}
 \end{figure}
 \begin{figure}[ht]
 \center 
-%\includegraphics[width=0.8\linewidth]{gcc_worst_fit.png}
-\caption{Memory requested and memory used with worst fit strategy}
+\includegraphics[width=0.85\linewidth]{syscall_strace.png}
+\caption{Number of system call with read and write}
 \label{worst}
 \end{figure}
 \begin{figure}[ht]

@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS  = -g -Wall -Werror -std=c99
 LDFLAGS = -L. -lmy_stdio
 MYLIB = libmy_stdio.so
-SRC = test1.c
+SRC = test1.c test2.c
 
 OBJ = $(patsubst %.c,%.o, $(SRC))
 EXE = $(patsubst %.o,%, $(OBJ))
