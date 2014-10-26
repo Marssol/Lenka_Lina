@@ -62,42 +62,38 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 	\paragraph{}
-	In this project we have to implement a I/O  library. 
-	And evaluate their performances in different applications.
+	In this project we focus on input in and output from file. Our goal was to implement library usable for formatted I/O on top of the system calls read and write. In other words we try to reimplement few functions from standard library stdio.h, trying to reduce number of system calls needed using the buffer.
 	\paragraph{}
-	Firstly in this report we give answers of questions in the subject. 
-	Then we present you our implementation.
-	Then we speak about the safety checks implementation. 
-	Finnaly, we analyse the performance and conclude this project.
+	In the first part, we talk about few implementation details of our functions, later we show that we succeeded in our attempt to reduce number of system calls and illustrate how time costly this low level calls can be when we compare speed of two programs: one using only system calls and one using our small library my\_stdio.h.
 
-\section{Subject questions}
-\subsection{Question 1}
 
 
 \section{Implementation}	
 \subsection{Struct my\_file}
  Our structure my\_file consists of buffer in which we temporarily store information that we read from a file or that user tried to write in. We use two pointers that show us in which part of the buffer are valid data. Of course, we need to remember handler we got from the system call write / read. We also have variables to distinguish between read and write mode, to remember if we already met EOF and one that knows whether buffer was already filled or it is empty.  
- \subsection{my\_fopen}
+ \subsection{My\_fopen}
  In this function we allocate the memory needed for the whole structure and we initialise all variables. Both pointers will point to the beginning of the buffer. According to the specified mode we open the file with appropriate flags.
- \subsection{my\_fclose}
+ \subsection{My\_fclose}
  In this function we need to close the file and free all allocated memory. If the mode of file is set to write, we also need to write the content of the buffer into the file.
 
- \subsection{my\_fread}
+ \subsection{My\_fread}
  At first, the function should check whether the mode is set to read, if not, it returns -1. Then we need to distinguish between different cases. In case it is the first read operation, the buffer is empty and we need to fill it. In case the amount of data the user requests to read is less than data available, it is the simplest case and we just give requested data to the user. Another case is when we meet EOF before expected. It can be detected thanks to the pointer that points to the end of valid data. In this case we just give user less data than he wanted. It can also happen that user wants more than what is disponsible in the buffer. In this case, we give him all we have, we refill the buffer and give him remaining data. We keep refilling data until we get enough.
 
- \subsection{my\_fwrite}
+ \subsection{My\_fwrite}
  As in the previous function, we should test whether the mode is set to write. If it is, user data will be stored. If there is enough space in the buffer, we just write all user data in. Once the buffer is full, we write its content in a file using actual system call. We keep writing data in and flushing full buffer until all user data are processed.
 
+\subsection{My\_feof}
+This function should say whether we met EOF during previous read. For this purpose we use variable defined in struct my\_file, which is updated in function my\_fread when EOF is recognized. Here we just return its value.
+
+\subsection{My\_fprintf}
+During implementation of this function we needed to deal with list of arguments of variable length. To work with them we use variable of type va\_list. The function processes string format in a while cycle. All normal characters are directly written using my\_fwrite function. When we reach character '\%', we switch to one of three possibilities(\%d, \%s, \%c). When we are dealing with one character (\%c), we pop the argument from va\_list, and we write its value to the file. When we are dealing with whole string, first we need to discover the length of it using strlen. Then we write appropriate number of characters stored in argument to the file. When we reach \%d we need to transform integer value to a char, then we can write it. While cycle ends when we reach \textbackslash 0 and during whole cycle we count number of successfully processed arguments.
+\subsection{My\_fscanf}
+Function is very similar to previous one but it is a bit more complicated. In case of \%s, for example, we do not know the length of string at the beginning. We read characters from file one by one and we look for white characters. When we reach one, we assume it is the end of string. We add \textbackslash 0 to the end and we give it back to user. For \%d it is similar. We recognize end of the number when we read first non-digit character.
 \section{Evaluation}
 \paragraph{}
-In the begining the library was static. It's is more fast for access, but 
-the library take many place in memory, and we conclude it's more efficient
-with a dynamic library. 
-\paragraph{}
-For evaluate our dynamic library, we use one test he copie one file in an
+For evaluate our library, we use one test he copie one file in an
 other file buffered for our library and we write the same test 
 but using the standard open, read and write.
-\subsection{Evaluation of the execution time}
 \paragraph{}
 We evaluate in the begining the time for copy two file with our library, 
 and with the standard open, read and write. We have also one ratio~: 
@@ -106,9 +102,7 @@ and with the standard open, read and write. We have also one ratio~:
 \end{equation}
 \paragraph{}
 We calculate the time of the execution with a script time.sh. We can see
-for example in table 5.1, the ratio is 4/36. Our library is also 9 time
-more fast. 
-\subsection{Table with time execution of two differents test}
+
 \begin{tabular}{|R{2cm}|C{2cm}|L{1.5cm}|L{1.5cm}|}
 \hline \rowcolor{lightgray}Library & Time (microsecondes) & Size of file\\
 \hline  libmy\_sdio & 4 & 8.0K \\
@@ -116,45 +110,35 @@ more fast.
 \hline 
 \end{tabular}
 
-\subsection{Evaluation on the number of system call}
-\paragraph{}
-A system call is very expensive. It's why we implemented this library, when
-we try ti reduce the number of the system call thanks to a buffer. 
-Now we would like check if the number of system call of all library is 
-really different then we use standar sytem functions.
-\paragraph{}
-With two same test, test1.c and test1\_bis.c. One test use our dynamic library, 
-and test1\_bis.c use sytems functions. This test have the same goal, copie
-text from a file in a other file.
-\paragraph{} With the program strace we explore
-the number of system call for test1 (Figure \ref{our}) and the 
-test1\_bis (Figure \ref{sys}). We can see for example with our library
-we have 6 calls of write whereas if use directely system function we have
-4936 calls of write. Our library is a success, wa have less syscall with 
-our buffered functions. 
 \begin{figure}[ht]
 \center 
 \includegraphics[width=0.85\linewidth]{my_strace.png}
 \caption{Number of system call of our library}
-\label{our}
+\label{first}
 \end{figure}
 \begin{figure}[ht]
 \center 
 \includegraphics[width=0.85\linewidth]{syscall_strace.png}
 \caption{Number of system call with read and write}
-\label{sys}
+\label{worst}
+\end{figure}
+\begin{figure}[ht]
+\center 
+%\includegraphics[width=0.8\linewidth]{gcc_best_fit.png}
+\caption{Memory requested and memory used with best fit strategy}
+\label{best}
 \end{figure}
 
-\subsection{Table with number of system call by test1 and test1\_bis}
-\begin{tabular}{|R{2cm}|C{2cm}|L{2cm}|L{2cm}|}
-\hline \rowcolor{lightgray}Test & System function & Number\\
-\hline  Test1 & read & 7 \\
-\hline  Test1\_bis  & read & 4937 \\
-\hline  Test1 & write & 6 \\
-\hline  Test1\_bis  & write & 4936 \\
+\subsection{Table with fragmentation level of differents programs}
+
+\begin{tabular}{|R{2cm}|C{1.5cm}|L{1.5cm}|L{1.5cm}|}
+\hline \rowcolor{lightgray}program & worst\_fit & best\_fit & first\_fit \\
+\hline  ls & 1.83 & 1.83 & 2.48 \\
+\hline  wc & 0.96 & 0.96 & 0.96 \\
+\hline  ps & 1.37 & 1.36 & 1.37 \\
+\hline  hostname & 2.42 & 2.42 & 3.23 \\
 \hline 
 \end{tabular}
-
 
 \section{Conclusion}
 \paragraph{}
