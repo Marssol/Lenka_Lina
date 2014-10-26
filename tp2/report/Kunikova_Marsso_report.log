@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.7.10)  26 OCT 2014 20:28
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.7.10)  26 OCT 2014 21:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -213,53 +213,47 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <8> on input line 47.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 47.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 82.
 
-(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
-File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
-)
-LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 82.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 104.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 104.
- [1
+[1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-<my_strace.png, id=11, 623.32875pt x 484.81125pt>
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 101.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 101.
+
+<my_strace.png, id=10, 623.32875pt x 484.81125pt>
 File: my_strace.png Graphic file (type png)
  <use my_strace.png>
 Package pdftex.def Info: my_strace.png used on input line 119.
 (pdftex.def)             Requested size: 293.2521pt x 228.08324pt.
 
-<syscall_strace.png, id=12, 622.325pt x 483.8075pt>
+<syscall_strace.png, id=11, 622.325pt x 483.8075pt>
 File: syscall_strace.png Graphic file (type png)
  <use syscall_strace.png>
 Package pdftex.def Info: syscall_strace.png used on input line 125.
 (pdftex.def)             Requested size: 293.2521pt x 227.98013pt.
 
-[2 <./my_strace.png>] [3 <./syscall_strace.png>] (./Kunikova_Marsso_report.aux)
- ) 
+[2] [3 <./my_strace.png>] [4 <./syscall_strace.png>]
+(./Kunikova_Marsso_report.aux) ) 
 Here is how much of TeX's memory you used:
- 3333 strings out of 493485
- 46665 string characters out of 3143526
- 112934 words of memory out of 3000000
- 6616 multiletter control sequences out of 15000+200000
+ 3316 strings out of 493485
+ 46373 string characters out of 3143526
+ 113934 words of memory out of 3000000
+ 6602 multiletter control sequences out of 15000+200000
  7895 words of font info for 28 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 41i,10n,35p,254b,253s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/shar
-e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texl
-ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on Kunikova_Marsso_report.pdf (3 pages, 157288 bytes).
+ 41i,10n,35p,808b,253s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/share/texlive/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
+10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
+Output written on Kunikova_Marsso_report.pdf (4 pages, 153253 bytes).
 PDF statistics:
- 44 PDF objects out of 1000 (max. 8388607)
- 29 compressed objects within 1 object stream
+ 43 PDF objects out of 1000 (max. 8388607)
+ 28 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
