@@ -73,43 +73,9 @@
 
 \section{Subject questions}
 \subsection{Question 1}
-We should keep track of the sizes of allocated blocks in order to
-release them. A linked list is not necessary because we don’t need ordering.
-A better solution is to use a header at the beginning of each block, 
-containing it's size. The exact position of the block can be determined using a
-list of free blocks.
-
-\subsection{Question 2}
-The user can use all addresses in our program if he has the pointer. But in real
-operating systems often it is not the case. Sometimes we can just access
-adresses divisible with 4.
-
-
-\subsection{Question 3}
-When we allocate a block we have to give the address of the
-block plus the size of the header containing the size of this block.
-For instance address + sizeof(int).
-
-\subsection{Question 4}
-The user should use the address that he gets after allocation. We need
-to decrease the address by the sizeof int to get the start of the block.
-When you free a block we need to check the position of the free block and decide if 
-we have to do a merge, or create a new free block and add it to the list.
-\subsection{Question 5}
-At the beginning of each free block we need to store a free block
-structure and if the size of the free block is inferior to the size 
-of this structure, we can’t use it.
-In this case we give to the user the whole free block even if he wanted less.
 
 
 \section{Implementation}	
-They are 3 folder~:
-\begin{itemize}
-\item mem\_alloc : The allocator with firstfit stategy, to perform the tests.
-\item mem\_alloc\_safe : The allocator with the safety checks integration.
-\item mem\_alloc\_frag : The allocator with tools for measuring the fragmentation.
-\end{itemize}
-
 \begin{enumerate}
 \item We initialize the memory with the function memory\_init
 \item We alloc the new block with mem\_alloc like that~:
@@ -125,59 +91,10 @@ They are 3 folder~:
 	\item If no adjacent block~:~create a new block and insert it in the list
 	\end{itemize}
 \end{enumerate}
-
-\subsection{Analysis about test3}
-\paragraph{}
-We can see with this test the first fit strategy favorises the fragmentation.
-In fact, in this example (test3) the smaller piece of memory (10 bytes) was
-allocated in a bigger free block. And this block became unusable. 
-The next allocation asks for 20 bytes, this didn't fit into the first 
-free block. We needed to skip it. And allocated another memory in the end.
-And we have a fragmentation. 
-The best fit strategy would handle this case better.
-
-\subsection{Analysis about test4}
-\paragraph{}
-We can see with this test that the best fit strategy is not for all 
-cases a better strategy. Actually, best fit strategy puts the first 
-allocated block in second free block of size 19. Then, 11 bytes become unusable. The second allocated block should be placed in the first 
-free block. 
-\paragraph{}
-Whereas using the first fit strategy, both allocated blocks can be placed
-in the first free block. And they fulfill the whole block. And we don't need 
-to use another block.
  
 \section{Safety checks}
-We decided to implement some safety checks in our memory allocator. All the time when free() is called we check if the pointer is valid. We provide a function that can be called at the end and that check that memory was freed correctly. We also try to recognize corrupted data in our memory allocator, but it is not always possible.
-
-\subsection{Forgetting to free memory}
-We provide a function void checking\_leaks() that can be run when the program is going to quit and witch checks if all allocated memory was successfully freed. It iterates through all available free blocks until it finds an existing full blocked that was not freed. We write the information in standard output about size of memory leak. Then the iterator continues examining other full blocks, if they exist, otherwise it would iterate through the left free blocks.
-
-\subsection{Calling free() incorrectly}
-Before the code of function free starts, we call a function int check() which will make sure the pointer it gets as an argument is really a pointer to start of a free block. It uses similar algorithm to previous function checking\_leaks(). In case that pointers are not valid no memory is freed and a warning is displayed.
-\subsection{Corrupting the allocator metadata}
-We tried to implement basic control of data corruption. We are not able to detect every error that a user can cause, but we can avoid a large number of them. To do so, when we work with an iterator we always check if it really points to the piece of memory we are working with. When we use the size of a free/full block we check if size is greater then 0 but not bigger than the size of memory. For this purpose we use simple macro boundaries.\\
-\#define BOUNDARIES(a,b,c) ($a \leq b$ \&\& $b \leq c$?1:0)
 
 \section{Performance evaluation}
-\paragraph{}
-To measure the performance we have to chose betzeen 3 different stategies:~first fit, 
-best and worst fit. And we evaluate the fragmentation. 
- 
-\paragraph{}
-The figure \ref{first} shows the amount of memory requested by the program gcc
-and the amount used by our allocator with the first\_fit strategy. 
-The same execution with a worst\_fit policy is presented in the figure \ref{worst}  
-and best\_fit in the figure \ref{best}.
-
-\paragraph{}
-We can't see the difference between the different strategies with the program
-gcc because our allocator stoped before. For a small program, or the begining
-of allocation of a program the tree strategies have equal performances. 
-
-\paragraph{}
-To compare the different allocation stategies we decided to measure 
-the performance with an average at any memory operation of the ratio~:
 
 \begin{equation}
 \left(\frac{Requested\_memory}{Sum\_of\_memory\_used} \right)  \quad
@@ -212,12 +129,6 @@ the performance with an average at any memory operation of the ratio~:
 \hline  hostname & 2.42 & 2.42 & 3.23 \\
 \hline 
 \end{tabular}
-
-\paragraph{}
-As seen in table 5.1, we always have fragmentation. The result shows 
-the Best fit strategy is equal than the Worst fit strategy. And we can
-see again that First stategy is lower.
-
 
 \section{Conclusion}
 \paragraph{}
