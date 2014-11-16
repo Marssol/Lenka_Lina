@@ -5,14 +5,14 @@ tab_barmans
 tab_bouteilles
 
 etat_client :
-thinking : pense a la boison qu'il veulent acheters
+THINKING : pense a la boison qu'il veulent acheters
 wait : attend qu'un barman soit libre peut importe
-servis : attend que le barman lui serve
+SERVED : attend que le barman lui serve
 bois : temps définit
 paye : paye ses cosomations
 
 etat_barman :
-libre : sans client, dans l'attente de servir
+DISPONIBLE : sans client, dans l'attente de servir
 waiting : dans l'attente que le nombre de bouteille se libère
 busy : concocte la boisson = un temps definit
 
@@ -49,6 +49,34 @@ f_barman() {
 	}
 	sleep(clean_bar);
 	
+}
+
+take_barman(nb_client) {
+	
+	pthread_mutex_lock (&m);  
+	
+   
+	client_state[nb_philo] = WAITING;
+	//Show states tables
+	printf("Client wait barman \n",nb_client);
+	print_client();
+   
+	//Check if one barman is free
+    while (state_barman[i] != DISPONIBLE) {
+		if (i == nb_barman) {
+			i = 0;
+		}
+		pthread_cond_wait (&cv[nb_philo],&m);
+		i++;
+	}
+	
+	client_state[nb_client] = SERVED;
+	
+	//Show states tables
+	printf("Client %d ask his drinking choice\n",nb_philo);
+	print();
+	
+	pthread_mutex_unlock (&m);
 }
 
 
