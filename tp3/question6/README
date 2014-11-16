@@ -1,0 +1,17 @@
+//Compiler
+	//Sequential
+		>clang -Wall -Wextra -o mult_vector mult_vector.c
+	//Parallel
+		>clang -Wall -Wextra -o mult_vector_threads mult_vector_threads.c -lpthread
+
+
+//Execution
+	//Sequential
+		./mult_vector size 
+		//Example :
+		>./mult_vector 10 
+	//Parallel
+		./mult_vector_threads size nb_thread
+		//Example :
+		>./mult_vector_threads 10 2
+

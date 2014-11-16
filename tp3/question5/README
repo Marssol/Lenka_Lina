@@ -1,0 +1,22 @@
+//Compiler
+	//Sequential
+		>clang -Wall -Wextra -o search search.c
+	//Parallel
+		>clang -Wall -Wextra -o search_threads search_threads.c -lpthread
+
+//Execution
+	//Sequential
+		./search size element
+		//Example :
+		>./search 10 2
+	//Parallel
+		./search_threads size element nb_thread
+		//Example :
+		>./search_threads 10 2 2
+
+//Statitisque
+	>cd stat
+	>./stat.sh > stat.csv
+	>./time.sh | python graph.py 
+
+(time : création des thread c'est à prendre en compte)

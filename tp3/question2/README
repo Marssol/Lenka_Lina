@@ -1,0 +1,5 @@
+//Compiler
+	>clang -Wall -Wextra -o match match.c -lpthread
+
+//Execution
+	>./match team1 team2 frequency 1 frequency 2

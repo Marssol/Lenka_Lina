@@ -1,0 +1,9 @@
+//Compiler
+	>clang -Wall -Wextra -o sum_threads sum_threads.c -lpthread
+
+
+//Execution
+	./sum_threads size nb_thread
+	//Example :
+		>./sum_threads 10 2
+
