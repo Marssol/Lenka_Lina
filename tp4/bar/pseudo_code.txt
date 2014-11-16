@@ -6,32 +6,45 @@ tab_bouteilles
 
 etat_client :
 THINKING : pense a la boison qu'il veulent acheters
-wait : attend qu'un barman soit libre peut importe
+WAIT : attend qu'un barman soit libre peut importe
 SERVED : attend que le barman lui serve
-bois : temps définit
-paye : paye ses cosomations
+DRINK : temps définit
+PAYEMENT : paye ses cosomations
 
 etat_barman :
 DISPONIBLE : sans client, dans l'attente de servir
-waiting : dans l'attente que le nombre de bouteille se libère
-busy : concocte la boisson = un temps definit
+WAITING : dans l'attente que le nombre de bouteille se libère
+BUSY : concocte la boisson = un temps definit
 
 etat_bouteilles :
-busy :
-disonibles :
+UNAVAILABLE :
+AVAILABLE :
 
 Idée :
 deux tableaux de threas
-	clients[]
-	barman[]
+	clients
+	barman
 	
-f_client() {
-	while(nb_boisson) {	
+4 tableau d'etat	
+	client_bottles[]
+	states_clients[];
+	states_barman[][0] -> barman
+				 [][1] -> client
+				 [][2] -> bottles
+				 
+	nb_bottles_available;
+	
+void f_client(void Arg) 
+{	
+	int nb_client = arg->nb_client;
+	int nb_bottles = arg->nb_botlles;
+	
+	while(nb_boisson_drank < NB_DRINK_DRINKING) {	
 		//Time for thinking
 		int think_time = rand() % THINK_TIME;
 		sleep(think_time);
 		
-        take_barman(nb_client);
+        take_barman(nb_client, nb_botlles);
 		
 		//Drink
 		sleep(DRINK_TIME);
@@ -41,27 +54,33 @@ f_client() {
 	sleep(paiment);
 }
 
-f_barman() {
-	while(bar_close) {	
-		si il est busy
-			//sleep(time Coktail)
-		//
+f_barman() 
+{
+	while(!bar_close) {	
+		if (state_barman[nb_barman][0] == WAITING) {	
+			take_bottles(i);
+		}
+		if (state_barman[nb_barman][0] == BUSY) {
+			sleep(time Coktail);
+			put_botlles(nb_barman);
+		}
 	}
 	sleep(clean_bar);
 	
 }
 
-take_barman(nb_client) {
+take_barman(nb_client,nb_bottles) 
+{
 	
 	pthread_mutex_lock (&m);  
-	
-   
+ 
 	client_state[nb_philo] = WAITING;
 	//Show states tables
 	printf("Client wait barman \n",nb_client);
 	print_client();
    
 	//Check if one barman is free
+	int i = 0;
     while (state_barman[i] != DISPONIBLE) {
 		if (i == nb_barman) {
 			i = 0;
@@ -70,7 +89,14 @@ take_barman(nb_client) {
 		i++;
 	}
 	
+	barman_state[i][0] = WAITING;
+	barman_state[i][1] = nb_client;
+	barman_state[i][2] = nb_bottles;
 	client_state[nb_client] = SERVED;
+	
+	while (){
+		pthread_cond_wait(cv_client[nb_client]);
+	}
 	
 	//Show states tables
 	printf("Client %d ask his drinking choice\n",nb_philo);
@@ -78,6 +104,46 @@ take_barman(nb_client) {
 	
 	pthread_mutex_unlock (&m);
 }
+
+void take_bottles(int nb_barman)
+{
+	pthread_mutex_lock (&m);  
+   
+	//Check if nb_bottles are free
+    while (nb_bottles != DISPONIBLE) {
+		pthread_cond_wait (&cv[nb_philo],&m);
+	}
+	
+	nb_bottles_states = UNAVAILABLE
+	barman_state[i][0] = BUSY;
+	
+	//Show states tables
+	printf("Barman %d prepare the coktail\n",nb_philo);
+	print();
+	
+	pthread_mutex_unlock (&m);	
+}
+
+void put_bottles(int nb_philo, int nb_client)
+{
+	pthread_mutex_lock (&m);
+	
+	
+	barman_state[nb_barman][0] = READY;
+	//Show states tables
+	printf("Barman %d finish prepare the drink, he is ready\n",nb_philo);
+	print();
+	
+	
+    //Prevent your client he can drink
+	pthread_cond_signal (&cv_client[barman_state[nb_barman][1]]);
+	
+	//Prevent all you collegue the botlles are avaible
+	pthread_cond_broadcast (&cv_barman);
+	
+	pthread_mutex_unlock (&m);   
+}
+
 
 
 main () {
