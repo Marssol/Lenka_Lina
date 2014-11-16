@@ -5,7 +5,8 @@
 #include "philo.h"
 
 #define THINK_TIME 5
-#define EAT_TIME 1
+#define DRINK_TIME 1
+#define PAYMENT_TIME 1
 #define NB_MEALS 5 
 
 //Argument structure
@@ -85,9 +86,7 @@ int main (int argc, char **argv)
     
     free(pthreads);
     free(philo_state);
-
+*/
 	return 0;
-	* /
-
 }
   

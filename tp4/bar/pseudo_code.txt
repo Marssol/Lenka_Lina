@@ -1,1 +1,59 @@
+senario
+
+tab_clients
+tab_barmans
+tab_bouteilles
+
+etat_client :
+thinking : pense a la boison qu'il veulent acheters
+wait : attend qu'un barman soit libre peut importe
+servis : attend que le barman lui serve
+bois : temps définit
+paye : paye ses cosomations
+
+etat_barman :
+libre : sans client, dans l'attente de servir
+waiting : dans l'attente que le nombre de bouteille se libère
+busy : concocte la boisson = un temps definit
+
+etat_bouteilles :
+busy :
+disonibles :
+
+Idée :
+deux tableaux de threas
+	clients[]
+	barman[]
+	
+f_client() {
+	while(nb_boisson) {	
+		//Time for thinking
+		int think_time = rand() % THINK_TIME;
+		sleep(think_time);
+		
+        take_barman(nb_client);
+		
+		//Drink
+		sleep(DRINK_TIME);
+		
+		nb_boisson_drank++;
+	}
+	sleep(paiment);
+}
+
+f_barman() {
+	while(bar_close) {	
+		si il est busy
+			//sleep(time Coktail)
+		//
+	}
+	sleep(clean_bar);
+	
+}
+
+
+main () {
+	init_etat_client() //Thinking
+	init_etat_philos() //Ready
+}
 
