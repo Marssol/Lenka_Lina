@@ -50,6 +50,7 @@ void init(int nb_philos, int *states)
 
 void take_chopstick(int nb_philo) 
 {
+    printf("%d im here\n",nb_philo);
 	pthread_mutex_lock (&m);  
    
 	philos_state[nb_philo] = HUNGRY;
@@ -58,7 +59,7 @@ void take_chopstick(int nb_philo)
 	print();
    
 	//Check left and right is free
-	while (LEFT == EATING || RIGHT == EATING) {
+    while (LEFT == EATING || RIGHT == EATING) {
 		pthread_cond_wait (&cv[nb_philo],&m);
 	}
 	
@@ -81,7 +82,7 @@ void put_chopstick(int nb_philo)
 	print();
 	
 	
-	//Prevent your neitghbour you finish eating
+    //Prevent your neitghbour you finish eating
 	pthread_cond_signal (&cv[LEFT]);
 	pthread_cond_signal (&cv[RIGHT]);
 	

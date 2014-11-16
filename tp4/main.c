@@ -4,30 +4,31 @@
 
 #include "philo.h"
 
-#define MAX 12
+#define MAX 30
 #define EAT_TIME 5
-
 
 //Global variables
 int end_dinner;
 int *philo_state;
+pthread_mutex_t mut;
 
 void *dinner (void *arg) 
 {
-	int nb_philo = *((int *)nb_philo);
-
-	while (!end_dinner) {
+    int *nb_philo = ((int*)arg);
+    printf("%d beforeloop \n",*nb_philo);
+    while (1) {
 	
 		//Time for thinking
 		int think_time = rand() % MAX;
 		sleep(think_time);
-		
-		take_chopstick(nb_philo);
+        //printf("%d before take\n",*nb_philo);
+        take_chopstick(*nb_philo);
+        //printf("%d after take\n",*nb_philo);
 		
 		//Eating
 		sleep(EAT_TIME);
 		
-		put_chopstick(nb_philo);
+        put_chopstick(*nb_philo);
 	}
 }
 
@@ -40,7 +41,7 @@ int main (int argc, char **argv)
 	
 	//Variables
 	//Check is nb_thread is correct
-	int nb_thread = atoi(argv[2]);
+    int nb_thread = atoi(argv[1]);
 	if (nb_thread > 5) {
 		printf("Number of thread have to be minimum 5\n");
 		return(-1);
@@ -59,21 +60,30 @@ int main (int argc, char **argv)
 	//Initialisation pthread
 	int i;
 	pthread_t *pthreads = (pthread_t *)malloc(nb_thread*sizeof(pthread_t));
+
+    //Initialisation mutex
+    pthread_mutex_init (&mut, NULL);
+
 	for (i = 0; i < nb_thread; i++) {
-		if (pthread_create(&pthreads[i], NULL, dinner, &i)) {
+
+        if (pthread_create(&pthreads[i], NULL, dinner, &i)) {
+
 				printf("ERROR !\n");
 				return -1;
-		}
-	}
-	
-	//Wait all threads
-	for (i = 0; i < nb_thread; i++) {
-		pthread_join(pthreads[i], NULL);
-	}
+        }
 
-	free(pthreads);
-	free(philo_state);
+	}
 	
-	return 0;
+    //Wait all threads
+
+        for (i = 0; i < nb_thread; i++) {
+            pthread_join(pthreads[i], NULL);
+        }
+
+        free(pthreads);
+        free(philo_state);
+
+        return 0;
+
 }
   
