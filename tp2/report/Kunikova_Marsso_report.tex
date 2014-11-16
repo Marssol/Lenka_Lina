@@ -89,43 +89,69 @@ This function should say whether we met EOF during previous read. For this purpo
 During implementation of this function we needed to deal with list of arguments of variable length. To work with them we use variable of type va\_list. The function processes string format in a while cycle. All normal characters are directly written using my\_fwrite function. When we reach character '\%', we switch to one of three possibilities(\%d, \%s, \%c). When we are dealing with one character (\%c), we pop the argument from va\_list, and we write its value to the file. When we are dealing with whole string, first we need to discover the length of it using strlen. Then we write appropriate number of characters stored in argument to the file. When we reach \%d we need to transform integer value to a char, then we can write it. While cycle ends when we reach \textbackslash 0 and during whole cycle we count number of successfully processed arguments.
 \subsection{My\_fscanf}
 Function is very similar to previous one but it is a bit more complicated. In case of \%s, for example, we do not know the length of string at the beginning. We read characters from file one by one and we look for white characters. When we reach one, we assume it is the end of string. We add \textbackslash 0 to the end and we give it back to user. For \%d it is similar. We recognize end of the number when we read first non-digit character.
+
 \section{Evaluation}
+For evaluate our library, we use one test he copie one file in an
+In the begining the library was static. It's is more fast for access, but 
+the library take many place in memory, and we conclude it's more efficient
+with a dynamic library. 
 \paragraph{}
-To evaluate our library, we used the test that copies one file to an other file using our library (buffered write and read) and did the same  using the standard system calls open, read and write.
+For evaluate our dynamic library, we use one test he copie one file in an
+ other file buffered for our library and we write the same test 
+ but using the standard open, read and write.
+\subsection{Evaluation of the execution time}
+ \paragraph{}
+ We evaluate in the begining the time for copy two file with our library, 
+ and with the standard open, read and write. We have also one ratio~: 
+ We calculate the time of the execution with a script time.sh. We can see
+ for example in table 5.1, the ratio is 4/36. Our library is also 9 time
+ more fast. 
+
+ \subsection{Table with time execution of two differents test}
+ \begin{tabular}{|R{2cm}|C{2cm}|L{1.5cm}|L{1.5cm}|}
+ \hline \rowcolor{lightgray}Library & Time (microsecondes) & Size of file\\
+ \hline  libmy\_sdio & 4 & 8.0K \\
+ \hline  libmy\_sdio & 36 & 8.0K \\
+ \hline 
+ \end{tabular}
+ 
+\subsection{Evaluation on the number of system call}
 \paragraph{}
-We evaluated at the beginning the time required for coping two files with our library,  
-and with the standard system calls open, read and write. We have also one ratio~: 
-\begin{equation}
-\left(\frac{My\_stdio\_time\_execution}{Standar\_Read\_Write\_time\_execution} \right)  \quad
-\end{equation}
+A system call is very expensive. It's why we implemented this library, when
+we try ti reduce the number of the system call thanks to a buffer. 
+Now we would like check if the number of system call of all library is 
+really different then we use standar sytem functions.
 \paragraph{}
-We calculated the time of the execution with a script time.sh. We can see
-
-\begin{tabular}{|R{2cm}|C{2cm}|L{1.5cm}|L{1.5cm}|}
-\hline \rowcolor{lightgray}Library & Time (microsecondes) & Size of file\\
-\hline  libmy\_sdio & 4 & 8.0K \\
-\hline  Standar  & 36 & 8.0K \\
-\hline 
-\end{tabular}
-
-\begin{figure}[ht]
-\center 
-\includegraphics[width=0.85\linewidth]{my_strace.png}
-\caption{Number of system call of our library}
-\label{first}
-\end{figure}
-\begin{figure}[ht]
-\center 
-\includegraphics[width=0.85\linewidth]{syscall_strace.png}
-\caption{Number of system call with read and write}
-\label{worst}
-\end{figure}
-\begin{figure}[ht]
-\center 
-%\includegraphics[width=0.8\linewidth]{gcc_best_fit.png}
-
-\label{best}
-\end{figure}
+With two same test, test1.c and test1\_bis.c. One test use our dynamic library, 
+and test1\_bis.c use sytems functions. This test have the same goal, copie
+text from a file in a other file.
+\paragraph{} With the program strace we explore
+the number of system call for test1 (Figure \ref{our}) and the 
+test1\_bis (Figure \ref{sys}). We can see for example with our library
+we have 6 calls of write whereas if use directely system function we have
+4936 calls of write. 
+ \begin{figure}[ht]
+ \center 
+ \includegraphics[width=0.85\linewidth]{my_strace.png}
+ \caption{Number of system call of our library}
+ \label{our}
+ \end{figure}
+ \begin{figure}[ht]
+ \center 
+ \includegraphics[width=0.85\linewidth]{syscall_strace.png}
+ \caption{Number of system call with read and write}
+ \label{sys}
+ \end{figure}
+ 
+ \subsection{Table with number of system call by test1 and test1\_bis}
+\begin{tabular}{|R{2cm}|C{2cm}|L{2cm}|L{2cm}|}
+\hline \rowcolor{lightgray}Test & System function & Number\\
+\hline  Test1 & read & 7 \\
+\hline  Test1\_bis  & read & 4937 \\
+\hline  Test1 & write & 6 \\
+\hline  Test1\_bis  & write & 4936 \\
+ \hline 
+ \end{tabular}
 
 \newpage
 
@@ -136,4 +162,4 @@ In this project we implemented library that provided high level interface to sam
 \paragraph{} 
 This task required a lot of effort and was very difficult for us to finish, as long as both of us are suffering illness since the beggining of the previous week. We both are excused from the doctor, we sent an e-mail regarding possible postponing of submitting this task and the second task, that we needed to deliver. As long as we did not receive an answer, we tried to do our best that our situation allowed us. The report may not be therefore perfect, but we hope our situation will be taken into account and hope for your understanding.
 
- \end{document}
+\end{document}
