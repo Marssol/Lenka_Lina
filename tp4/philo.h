@@ -14,5 +14,6 @@
 void init(int nb_philos, int *states);
 void take_chopstick(int nb_philo);
 void put_chopstick(int nb_philo);
+void dinner_terminate(void);
 
 #endif

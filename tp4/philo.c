@@ -1,8 +1,5 @@
 #include "philo.h"
 
-#define LEFT (nb_philo + philos - 1) % philos 
-#define RIGHT (nb_philo + 1) % philos        
-
 //Global variables
 int *philos_state; 
 int philos;
@@ -50,8 +47,10 @@ void init(int nb_philos, int *states)
 
 void take_chopstick(int nb_philo) 
 {
-    printf("%d im here\n",nb_philo);
 	pthread_mutex_lock (&m);  
+	
+	int left = (nb_philo + philos - 1) % philos;
+	int right = (nb_philo + 1) % philos;
    
 	philos_state[nb_philo] = HUNGRY;
 	//Show states tables
@@ -59,7 +58,7 @@ void take_chopstick(int nb_philo)
 	print();
    
 	//Check left and right is free
-    while (LEFT == EATING || RIGHT == EATING) {
+    while (philos_state[left] == EATING || philos_state[right] == EATING) {
 		pthread_cond_wait (&cv[nb_philo],&m);
 	}
 	
@@ -74,7 +73,10 @@ void take_chopstick(int nb_philo)
 
 void put_chopstick(int nb_philo)
 {
-	pthread_mutex_lock (&m); 
+	pthread_mutex_lock (&m);
+	
+	int left = (nb_philo + philos - 1) % philos;
+	int right = (nb_philo + 1) % philos; 
 	
 	philos_state[nb_philo] = THINKING;
 	//Show states tables
@@ -83,8 +85,13 @@ void put_chopstick(int nb_philo)
 	
 	
     //Prevent your neitghbour you finish eating
-	pthread_cond_signal (&cv[LEFT]);
-	pthread_cond_signal (&cv[RIGHT]);
+	pthread_cond_signal (&cv[left]);
+	pthread_cond_signal (&cv[right]);
 	
 	pthread_mutex_unlock (&m);   
+}
+
+void dinner_terminate(void)
+{
+	free(cv);
 }

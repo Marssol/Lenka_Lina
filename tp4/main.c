@@ -4,32 +4,42 @@
 
 #include "philo.h"
 
-#define MAX 30
-#define EAT_TIME 5
+#define THINK_TIME 5
+#define EAT_TIME 1
+#define NB_MEALS 5 
+
+//Argument structure
+typedef struct Array_arg {
+	int nb_philo;
+} Array_arg;
 
 //Global variables
-int end_dinner;
 int *philo_state;
 pthread_mutex_t mut;
 
 void *dinner (void *arg) 
 {
-    int *nb_philo = ((int*)arg);
-    printf("%d beforeloop \n",*nb_philo);
-    while (1) {
+	Array_arg *argu = (Array_arg *)arg;
+    int nb_philo = argu->nb_philo;
+    int nb_meals_ate = 0;
+    
+    while (nb_meals_ate < NB_MEALS) {
 	
 		//Time for thinking
-		int think_time = rand() % MAX;
+		int think_time = rand() % THINK_TIME;
 		sleep(think_time);
-        //printf("%d before take\n",*nb_philo);
-        take_chopstick(*nb_philo);
-        //printf("%d after take\n",*nb_philo);
+		
+        take_chopstick(nb_philo);
 		
 		//Eating
 		sleep(EAT_TIME);
 		
-        put_chopstick(*nb_philo);
+		nb_meals_ate++;
+		
+        put_chopstick(nb_philo);
 	}
+	
+	return 0;
 }
 
 int main (int argc, char **argv) 
@@ -53,8 +63,10 @@ int main (int argc, char **argv)
 	//Initialisation state philosophes
 	philo_state = (int*)malloc(nb_thread * sizeof(int));
 	
+	//Initialisation of array thread arguments
+	Array_arg args[nb_thread];
+	
 	//Dinner beginning
-	end_dinner = 0;
 	init(nb_thread, philo_state);
 	
 	//Initialisation pthread
@@ -65,25 +77,27 @@ int main (int argc, char **argv)
     pthread_mutex_init (&mut, NULL);
 
 	for (i = 0; i < nb_thread; i++) {
-
-        if (pthread_create(&pthreads[i], NULL, dinner, &i)) {
+		args[i].nb_philo = i;
+        if (pthread_create(&pthreads[i], NULL, dinner, &args[i])) {
 
 				printf("ERROR !\n");
 				return -1;
         }
-
 	}
 	
     //Wait all threads
+    for (i = 0; i < nb_thread; i++) {
+		pthread_join(pthreads[i], NULL);
+	}
+	
+	dinner_terminate();
+	
+	printf("\n** The dinner is terminate **\n");
+    
+    free(pthreads);
+    free(philo_state);
 
-        for (i = 0; i < nb_thread; i++) {
-            pthread_join(pthreads[i], NULL);
-        }
-
-        free(pthreads);
-        free(philo_state);
-
-        return 0;
+	return 0;
 
 }
   
