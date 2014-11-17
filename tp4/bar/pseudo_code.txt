@@ -1,8 +1,10 @@
 senario
 
+threads
 tab_clients
 tab_barmans
-tab_bouteilles
+
+//tab_bouteilles
 
 etat_client :
 THINKING : pense a la boison qu'il veulent acheters
@@ -26,17 +28,17 @@ deux tableaux de threas
 	barman
 	
 4 tableau d'etat	
-	client_bottles[]
+	states_bottles[]
 	states_clients[];
+	array_bottles_list[i]
 	states_barman[][0] -> barman
 				 [][1] -> client
-				 [][2] -> bottles
 				 
-	nb_bottles_available;
 	
 void f_client(void Arg) 
 {	
 	int nb_client = arg->nb_client;
+	//list bottles
 	int nb_bottles = arg->nb_botlles;
 	
 	while(nb_boisson_drank < NB_DRINK_DRINKING) {	
@@ -83,25 +85,24 @@ take_barman(nb_client,nb_bottles)
 	int i = 0;
     while (state_barman[i] != DISPONIBLE) {
 		if (i == nb_barman) {
-			i = 0;
+			pthread_cond_wait (&cv[nb_barman],&m);
 		}
-		pthread_cond_wait (&cv[nb_philo],&m);
 		i++;
 	}
 	
 	barman_state[i][0] = WAITING;
 	barman_state[i][1] = nb_client;
-	barman_state[i][2] = nb_bottles;
 	client_state[nb_client] = SERVED;
 	
-	while (){
+	while (barman_state[i][0] != DISPONIBLE){
 		pthread_cond_wait(cv_client[nb_client]);
 	}
 	
 	//Show states tables
+	
 	printf("Client %d ask his drinking choice\n",nb_philo);
 	print();
-	
+	client_state[nb_client] = DRINKING;
 	pthread_mutex_unlock (&m);
 }
 
@@ -115,7 +116,7 @@ void take_bottles(int nb_barman)
 	}
 	
 	nb_bottles_states = UNAVAILABLE
-	barman_state[i][0] = BUSY;
+	barman_state[n b_barman][0] = BUSY;
 	
 	//Show states tables
 	printf("Barman %d prepare the coktail\n",nb_philo);
@@ -139,7 +140,8 @@ void put_bottles(int nb_philo, int nb_client)
 	pthread_cond_signal (&cv_client[barman_state[nb_barman][1]]);
 	
 	//Prevent all you collegue the botlles are avaible
-	pthread_cond_broadcast (&cv_barman);
+	//LOOP all bottles
+		pthread_cond_signal (&cv_barman);
 	
 	pthread_mutex_unlock (&m);   
 }
