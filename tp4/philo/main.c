@@ -15,7 +15,6 @@ typedef struct Array_arg {
 
 //Global variables
 int *philo_state;
-pthread_mutex_t mut;
 
 void *dinner (void *arg) 
 {
@@ -72,9 +71,6 @@ int main (int argc, char **argv)
 	//Initialisation pthread
 	int i;
 	pthread_t *pthreads = (pthread_t *)malloc(nb_thread*sizeof(pthread_t));
-
-    //Initialisation mutex
-    pthread_mutex_init (&mut, NULL);
 
 	for (i = 0; i < nb_thread; i++) {
 		args[i].nb_philo = i;
