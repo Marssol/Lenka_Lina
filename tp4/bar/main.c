@@ -13,7 +13,7 @@
 //Argument structure
 typedef struct Array_arg {
 	int my_id;
-	int k_bottles
+	int k_bottles;
 } Array_arg;
 
 int comp (const void * elem1, const void * elem2) 
@@ -82,7 +82,9 @@ void *f_client(void *arg)
 	//list of bottles
 	Choice_bottles str_set_bot;
 	
-	while(nb_boisson_drank < NB_DRINK_DRINKING) {	
+	int nb_boisson_drank = 0;
+	
+	while(nb_boisson_drank < NB_DRINKS) {	
 		//Time for thinking
 		int think_time = rand() % THINK_TIME;
 		sleep(think_time);
@@ -106,7 +108,6 @@ void * f_barman(void *arg)
 {
 	Array_arg *argu = (Array_arg *)arg;
 	int id_barman = argu->my_id;
-	int k_bottles = argu->k_bottles;
 	
 	while(!bar_close) {
 		
@@ -117,13 +118,13 @@ void * f_barman(void *arg)
 		take_bottles(id_barman);
 		
 		//Prepare coktail
-		sleep(time Coktail);
+		sleep(DRINK_PREPARE_TIME);
 		
 		//Put bottles
-		put_botlles(nb_barman);
+		put_botlles_free_barman(id_barman);
 	}
-	sleep(clean_bar);
 	
+	return 0;
 }
 
 int main (int argc, char **argv) 
@@ -150,29 +151,46 @@ int main (int argc, char **argv)
 		printf("Number of bottles have to be minimum 1\n");
 		return(-1);
 	}
-/*	
+
 	//Seed initialisation
 	srand(time(NULL));
 	
-	//Initialisation state philosophes
-	philo_state = (int*)malloc(nb_thread * sizeof(int));
+	//States initialisations
+	int *client_states = (int*)malloc(nb_clients * sizeof(int));
+	int *bottles_states = (int*)malloc(nb_bottles * sizeof(int));
+	int **barman_states = (int**)malloc(nb_barmans * sizeof(int*));
+	
+	int i;
+	for (i = 0; i < nb_barmans; i++) {
+		barman_states[i] = (int*)malloc(2*sizeof(int)); 
+	}
 	
 	//Initialisation of array thread arguments
-	Array_arg args[nb_thread];
+	Array_arg args_c[nb_clients];
+	Array_arg args_b[nb_barmans];
 	
-	//Dinner beginning
-	init(nb_thread, philo_state);
+	//Open bar
+	init(nb_clients, nb_barmans, nb_bottles, barman_states, bottles_states, client_states);
+	
 	
 	//Initialisation pthread
-	int i;
-	pthread_t *pthreads = (pthread_t *)malloc(nb_thread*sizeof(pthread_t));
+	pthread_t *pthreads_clients = (pthread_t *)malloc(nb_clients * sizeof(pthread_t));
+	pthread_t *pthreads_barmans = (pthread_t *)malloc(nb_barmans * sizeof(pthread_t));
 
-    //Initialisation mutex
-    pthread_mutex_init (&mut, NULL);
+	for (i = 0; i < nb_clients; i++) {
+		args_c[i].my_id = i;
+		args_c[i].k_bottles = nb_bottles;
+        if (pthread_create(&pthreads_clients[i], NULL, f_client, &args_c[i])) {
 
-	for (i = 0; i < nb_thread; i++) {
-		args[i].nb_philo = i;
-        if (pthread_create(&pthreads[i], NULL, dinner, &args[i])) {
+				printf("ERROR !\n");
+				return -1;
+        }
+	}
+	
+	for (i = 0; i < nb_barmans; i++) {
+		args_b[i].my_id = i;
+		args_b[i].k_bottles = nb_bottles;
+        if (pthread_create(&pthreads_barmans[i], NULL, f_barman, &args_b[i])) {
 
 				printf("ERROR !\n");
 				return -1;
@@ -180,17 +198,27 @@ int main (int argc, char **argv)
 	}
 	
     //Wait all threads
-    for (i = 0; i < nb_thread; i++) {
-		pthread_join(pthreads[i], NULL);
+    for (i = 0; i < nb_clients; i++) {
+		pthread_join(pthreads_clients[i], NULL);
+	}
+    for (i = 0; i < nb_barmans; i++) {
+		pthread_join(pthreads_barmans[i], NULL);
 	}
 	
-	dinner_terminate();
+	//The bar close
+	bar_close();
 	
-	printf("\n** The dinner is terminate **\n");
+	printf("\n** The bar is close **\n");
     
-    free(pthreads);
-    free(philo_state);
-*/
+    free(pthreads_clients);
+    free(pthreads_barmans);
+    free(client_states);
+    free(bottles_states); 
+	for (i = 0; i < nb_barmans; i++) {
+		free(barman_states[i]); 
+	}
+	free(barman_states);
+	
 	return 0;
 }
   
