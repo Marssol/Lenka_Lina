@@ -47,8 +47,8 @@ static void print()
 	printf("\n* Barmans *\n");
 	for (i = 0; i < nb_barman; i++) {
 		switch(barman_states[i][0]) {
-			case THINKING : 
-				printf("T ");
+            case WAITING :
+                printf("W ");
 				break;
 			case BUSY : 
 				printf("B ");
@@ -87,25 +87,26 @@ void init(int n_clients, int m_barmans, int k_bottles, int **states_barmans, int
 	cv_clients = (pthread_cond_t*)(malloc(n_clients*sizeof(pthread_cond_t)));
 	cv_barmans = (pthread_cond_t*)(malloc(m_barmans*sizeof(pthread_cond_t)));
 	cv_bottles = (pthread_cond_t*)(malloc(k_bottles*sizeof(pthread_cond_t)));
+
+    client_choices = (Choice_bottles*)(malloc(n_clients*sizeof(Choice_bottles)));
 	
 	//Initialisation pthread_cond
 	pthread_cond_init (&cv_all_barmans, NULL);
 
 	int i;
+    for (i = 0; i < m_barmans; i++) {
+        pthread_cond_init (&cv_barmans[i], NULL);
+        barman_states[i][0] = DISPONIBLE;
+        barman_states[i][1] = -1;
+    }
 	for (i = 0; i < n_clients; i++) {
 		pthread_cond_init (&cv_clients[i], NULL);
 		clients_states[i] = THINKING;
-	}
-	for (i = 0; i < m_barmans; i++) {
-		pthread_cond_init (&cv_barmans[i], NULL);
-		barman_states[i][0] = DISPONIBLE;
-		barman_states[i][1] = -1;
-	}
+    }
 	for (i = 0; i < k_bottles; i++) {
-		pthread_cond_init (&cv_bottles[i], NULL);
-		barman_states[i][0] = AVAILABLE;
-	}
-	
+        pthread_cond_init (&cv_bottles[i], NULL);
+        bottle_states[i] = AVAILABLE;
+    }
 	nb_client = n_clients;
 	nb_barman = m_barmans;
 	nb_bottles = k_bottles;
@@ -123,15 +124,16 @@ void take_barman(int id_client, Choice_bottles str_set_bottles)
    
 	//Check if one barman is free
 	int i = 0;
-    while (barman_states[i][0] != DISPONIBLE) {
-		if (i == nb_barman) {
+    while (barman_states[i][0] != DISPONIBLE && i < nb_barman ){
+        if (i == nb_barman - 1) {
 			pthread_cond_wait (&cv_all_barmans,&mb);
+            i = 0;
 		}
 		i++;
 	}
-	
-	barman_states[i][0] = WAITING;
-	barman_states[i][1] = id_client;
+
+    barman_states[i][0] = WAITING;
+    barman_states[i][1] = id_client;
 	clients_states[nb_client] = SERVED;
 	
 	//The client choice is saved
@@ -144,7 +146,7 @@ void take_barman(int id_client, Choice_bottles str_set_bottles)
 	
 	//Show states tables
 	
-	printf("Client %d ask his drinking choice\n",id_client);
+    printf("Client %d drink\n",id_client);
 	print();
 	clients_states[nb_client] = DRINKING;
 	pthread_mutex_unlock (&mb);
