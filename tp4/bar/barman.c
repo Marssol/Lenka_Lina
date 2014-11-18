@@ -137,9 +137,10 @@ void take_barman(int id_client, Choice_bottles str_set_bottles)
 	clients_states[nb_client] = SERVED;
 	
 	//The client choice is saved
-	client_choices[id_client] = str_set_bottles;
-	pthread_cond_signal(&cv_barmans[i]);
-	
+    client_choices[id_client] = str_set_bottles;
+
+    pthread_cond_signal(&cv_barmans[i]);
+
 	while (barman_states[i][0] != DISPONIBLE){
 		pthread_cond_wait(&cv_clients[i],&mb);
 	}

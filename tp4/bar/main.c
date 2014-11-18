@@ -140,7 +140,7 @@ void * f_barman(void *arg)
 
 int main (int argc, char **argv) 
 {
-     Choice_bottles cc = random_set_bottles (5);
+     //Choice_bottles cc = random_set_bottles (5);
 
     if (argc != 4) {
 		fprintf(stderr, "usage : %s number of clients, barmans and botles\n", argv[0]);
