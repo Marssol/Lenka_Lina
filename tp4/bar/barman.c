@@ -26,7 +26,6 @@ pthread_mutex_t mClose;
 
 static void print() 
 {
-    //printf("\nKLI bar is open\n");
 	int i;
 	printf("\n* Clients *\n");
 	for (i = 0; i < nb_client; i++) {
@@ -83,7 +82,7 @@ void finishDrink(int id)
     clients_states[id] = THINKING;
 }
 
-void init(int n_clients, int m_barmans, int k_bottles, int **states_barmans, int *states_bottles, int *states_clients, int* bar_go_close)
+void init(int n_clients, int m_barmans, int k_bottles, int **states_barmans, int *states_bottles, int *states_clients)
 {
     closed = 0;
 	pthread_mutex_init (&mb, NULL);
@@ -141,9 +140,8 @@ void take_barman(int id_client, Choice_bottles str_set_bottles)
 		i++;
 	}
 
-    // ith barman is free. 0 = state of barman, 1 = id client
+    // Barman state : [i][0] = state of barman, [i][1] = id client
     barman_states[i][0] = WAITING;
-    //sleep(3);
     barman_states[i][1] = id_client;
     clients_states[id_client] = SERVED;
     printf("Client %d have a barman %d now\n",id_client,i);
@@ -155,7 +153,6 @@ void take_barman(int id_client, Choice_bottles str_set_bottles)
     printf("sent signal to barman %d\n",i);
     //if (barman_states[i][0] != DISPONIBLE){
         pthread_cond_wait(&cv_clients[id_client],&mb); // client is waiting for his/her drink
-        printf("DRINK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     //}
 	//Show states tables
     clients_states[id_client] = DRINKING;
@@ -169,7 +166,6 @@ void take_barman(int id_client, Choice_bottles str_set_bottles)
 int ready(int id_barman)
 {
     pthread_mutex_lock (&mb);
-    //pthread_mutex_lock (&mClose);
 
 
     if (barman_states[id_barman][0] == WAITING)
@@ -179,10 +175,9 @@ int ready(int id_barman)
         return closed;
     }
     while (barman_states[id_barman][0] == DISPONSIBLE && !closed) {
-        //printf("barman will wait\n");
         pthread_cond_wait(&cv_barmans[id_barman],&mb); // waiting for job
 	}
-    //pthread_mutex_unlock (&mClose);
+	
 	pthread_mutex_unlock (&mb);
     return closed;
 }
@@ -198,9 +193,6 @@ void go_home()
     }
     pthread_mutex_unlock (&mb);
 }
-
-
-
 
 void take_bottles(int id_barman)
 {

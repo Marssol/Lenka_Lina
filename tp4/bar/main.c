@@ -78,36 +78,6 @@ Choice_bottles random_set_bottles (int k_bottles)
 
       free(array);
       return struct_set_bottles;
-
-
-   /* int nb_bottles_drink = (rand() % MAXIMUM_BOTTLES) +1;
-       int start = rand() % k_bottles;
-       int j, i = start;
-       int sum = 0;
-       int* array = (int*)malloc(k_bottles*sizeof(int));
-       for (j = 0; j < k_bottles; j++) {array[j] = 0;}
-       Choice_bottles struct_set_bottles;
-       struct_set_bottles.nb_bottles = nb_bottles_drink;
-       struct_set_bottles.set_bottles = (int *) malloc(nb_bottles_drink * sizeof(int));
-       while (sum != nb_bottles_drink)
-       {
-           if (i == k_bottles)i = 0;
-           if (rand() % 2 == 1)
-           {
-               if (array[i] != 1)
-               {
-                   array[i] = 1;
-                   sum++;
-                   struct_set_bottles.set_bottles[sum] = i;
-               }
-           }
-           else {i++;}
-       }
-       qsort (struct_set_bottles.set_bottles, nb_bottles_drink, sizeof(int), comp);
-
-       free(array);
-       return struct_set_bottles;
-    */
 } 
 
 void free_bottles(Choice_bottles c) 
@@ -133,26 +103,17 @@ void *f_client(void *arg)
 		
 		//Generate randomly list of bottles
 		str_set_bot = random_set_bottles (k_bottles);
-        int i = 0;
-        //printf("random after return\n");
-        //for(i = 0;i<str_set_bot.nb_bottles;i++)
-        //{
-        //    printf("%d ",str_set_bot.set_bottles[i]);
-        //}
-        //printf("\n");
         take_barman(id_client, str_set_bot);
 		
 		//Drink
 		sleep(DRINK_TIME);
         finishDrink(id_client);
 		nb_boisson_drank++;
-        printf("number of drinks drunk: %d\n",nb_boisson_drank);
+        //printf("number of drinks drunk: %d\n",nb_boisson_drank);
         free_bottles(str_set_bot);
         fflush(stdout);
 
     }
-    printf("end of client\n");
-    fflush(stdout);
 	
 	return 0;
 }
@@ -162,12 +123,13 @@ void * f_barman(void *arg)
 	Array_arg *argu = (Array_arg *)arg;
 	int id_barman = argu->my_id;
     int closed = 0;
+    
     while(!closed) {
 		
         //Wait a client
         closed = ready(id_barman);
+        
         if (closed) break;
-        //if (bar_go_close) break;
 
         //Try to take bottles
 		take_bottles(id_barman);
@@ -179,9 +141,6 @@ void * f_barman(void *arg)
 		put_botlles_free_barman(id_barman);
     }
 
-    //finish(id_barman);
-    printf("barman %d went home",id_barman);
-    fflush(stdout);
 	return 0;
 }
 
@@ -231,7 +190,7 @@ int main (int argc, char **argv)
     pthread_mutex_init (&mClose, NULL);
 	
 	//Open bar
-    init(nb_clients, nb_barmans, nb_bottles, barman_states, bottles_states, client_states, &bar_go_close);
+    init(nb_clients, nb_barmans, nb_bottles, barman_states, bottles_states, client_states);
 	
 	
 	//Initialisation pthread
@@ -247,7 +206,10 @@ int main (int argc, char **argv)
                 return -1;
         }
     }
-sleep(3);
+    
+    printf("\nKLI bar is open\n");
+
+	//sleep(3);
 
 	for (i = 0; i < nb_clients; i++) {
 		args_c[i].my_id = i;
@@ -263,7 +225,7 @@ sleep(3);
     for (i = 0; i < nb_clients; i++) {
 		pthread_join(pthreads_clients[i], NULL);
 	}
-    printf("clients finished succesfully");
+    
     fflush(stdout);
 
     go_home();
