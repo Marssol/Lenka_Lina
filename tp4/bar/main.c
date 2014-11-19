@@ -4,13 +4,14 @@
 
 #include "barman.h"
 
-#define THINK_TIME 5
-#define DRINK_TIME 1
+#define THINK_TIME 1
+#define DRINK_TIME 4
 #define DRINK_PREPARE_TIME 1
-#define NB_DRINKS 5 
+#define NB_DRINKS 2
 #define MAXIMUM_BOTTLES 3
 
 int bar_go_close = 0;
+pthread_mutex_t mClose;
 
 //Argument structure
 typedef struct Array_arg {
@@ -29,54 +30,84 @@ int comp (const void * elem1, const void * elem2)
 
 Choice_bottles random_set_bottles (int k_bottles)
 {
-    int nb_bottles_drink = rand() % MAXIMUM_BOTTLES +1;
-	int start = rand() % k_bottles;
-	int j, i = start;
-	int sum = 0;
-    //int array[k_bottles];
-    int* array = (int*)malloc(k_bottles*sizeof(int));
-	for (j = 0; j < k_bottles; j++) {
-		array[j] = 0;
-	}
-	while (sum != nb_bottles_drink) {
-		if (rand() % 2 == 1) {
-			if (array[i] != 1) {
-				array[i] = 1;
-				sum++;
-			}
-		}
-		if (i == k_bottles) {
-			i = 0;
-		}
-		else {
-			i++;
-		}
-	}
-	
-	Choice_bottles struct_set_bottles;
-	struct_set_bottles.nb_bottles = nb_bottles_drink;
-    struct_set_bottles.set_bottles = (int *) malloc(nb_bottles_drink * sizeof(int));
-    if (struct_set_bottles.set_bottles<=0){
-       printf("error malloc");
-            exit (1);
-    }
-    printf("\n\n BLUP \n%d\n",struct_set_bottles.set_bottles);
-	sum = 0;
-    i = 0;
-    printf("random choise is: \n");
-	while (sum != nb_bottles_drink) { 
-		if (array[i] == 1) {
-			struct_set_bottles.set_bottles[sum] = i;
-            printf("%d ",i);
-			sum++;
-		}
-        i++;
-	}
-    printf("\n");
-	qsort (struct_set_bottles.set_bottles, nb_bottles_drink, sizeof(int), comp);
-	
-    free(array);
-	return struct_set_bottles; 
+    int nb_bottles_drink = (rand() % MAXIMUM_BOTTLES) +1;
+      int start = rand() % k_bottles;
+      int j, i = start;
+      int sum = 0;
+      //int array[k_bottles];
+      int* array = (int*)malloc(k_bottles*sizeof(int));
+      for (j = 0; j < k_bottles; j++) {
+          array[j] = 0;
+      }
+      while (sum != nb_bottles_drink) {
+          if (i == k_bottles) {
+              i = 0;
+          }
+          if (rand() % 2 == 1) {
+              if (array[i] != 1) {
+                  array[i] = 1;
+                  sum++;
+              }
+          }
+
+          else {
+              i++;
+          }
+      }
+
+      Choice_bottles struct_set_bottles;
+      struct_set_bottles.nb_bottles = nb_bottles_drink;
+      struct_set_bottles.set_bottles = (int *) malloc(nb_bottles_drink * sizeof(int));
+      if (struct_set_bottles.set_bottles<=0){
+         printf("error malloc");
+              exit (1);
+      }
+      sum = 0;
+      i = 0;
+      printf("random choise is: \n");
+      while (sum != nb_bottles_drink) {
+          if (array[i] == 1) {
+              struct_set_bottles.set_bottles[sum] = i;
+              printf("%d ",i);
+              sum++;
+          }
+          i++;
+      }
+      printf("\n");
+      qsort (struct_set_bottles.set_bottles, nb_bottles_drink, sizeof(int), comp);
+
+      free(array);
+      return struct_set_bottles;
+
+
+   /* int nb_bottles_drink = (rand() % MAXIMUM_BOTTLES) +1;
+       int start = rand() % k_bottles;
+       int j, i = start;
+       int sum = 0;
+       int* array = (int*)malloc(k_bottles*sizeof(int));
+       for (j = 0; j < k_bottles; j++) {array[j] = 0;}
+       Choice_bottles struct_set_bottles;
+       struct_set_bottles.nb_bottles = nb_bottles_drink;
+       struct_set_bottles.set_bottles = (int *) malloc(nb_bottles_drink * sizeof(int));
+       while (sum != nb_bottles_drink)
+       {
+           if (i == k_bottles)i = 0;
+           if (rand() % 2 == 1)
+           {
+               if (array[i] != 1)
+               {
+                   array[i] = 1;
+                   sum++;
+                   struct_set_bottles.set_bottles[sum] = i;
+               }
+           }
+           else {i++;}
+       }
+       qsort (struct_set_bottles.set_bottles, nb_bottles_drink, sizeof(int), comp);
+
+       free(array);
+       return struct_set_bottles;
+    */
 } 
 
 void free_bottles(Choice_bottles c) 
@@ -102,15 +133,26 @@ void *f_client(void *arg)
 		
 		//Generate randomly list of bottles
 		str_set_bot = random_set_bottles (k_bottles);
-		
+        int i = 0;
+        //printf("random after return\n");
+        //for(i = 0;i<str_set_bot.nb_bottles;i++)
+        //{
+        //    printf("%d ",str_set_bot.set_bottles[i]);
+        //}
+        //printf("\n");
         take_barman(id_client, str_set_bot);
 		
 		//Drink
 		sleep(DRINK_TIME);
-		
+        finishDrink(id_client);
 		nb_boisson_drank++;
+        printf("number of drinks drunk: %d\n",nb_boisson_drank);
         free_bottles(str_set_bot);
-	}
+        fflush(stdout);
+
+    }
+    printf("end of client\n");
+    fflush(stdout);
 	
 	return 0;
 }
@@ -119,13 +161,15 @@ void * f_barman(void *arg)
 {
 	Array_arg *argu = (Array_arg *)arg;
 	int id_barman = argu->my_id;
-	
-    while(!bar_go_close) {
+    int closed = 0;
+    while(!closed) {
 		
-		//Wait a client	
-		ready(id_barman);
-			
-		//Try to take bottles
+        //Wait a client
+        closed = ready(id_barman);
+        if (closed) break;
+        //if (bar_go_close) break;
+
+        //Try to take bottles
 		take_bottles(id_barman);
 		
 		//Prepare coktail
@@ -133,15 +177,16 @@ void * f_barman(void *arg)
 		
 		//Put bottles
 		put_botlles_free_barman(id_barman);
-	}
-	
+    }
+
+    //finish(id_barman);
+    printf("barman %d went home",id_barman);
+    fflush(stdout);
 	return 0;
 }
 
 int main (int argc, char **argv) 
 {
-     //Choice_bottles cc = random_set_bottles (5);
-
     if (argc != 4) {
 		fprintf(stderr, "usage : %s number of clients, barmans and botles\n", argv[0]);
 		exit (-1) ;
@@ -181,9 +226,12 @@ int main (int argc, char **argv)
 	//Initialisation of array thread arguments
 	Array_arg args_c[nb_clients];
 	Array_arg args_b[nb_barmans];
+
+    //Initialisation
+    pthread_mutex_init (&mClose, NULL);
 	
 	//Open bar
-	init(nb_clients, nb_barmans, nb_bottles, barman_states, bottles_states, client_states);
+    init(nb_clients, nb_barmans, nb_bottles, barman_states, bottles_states, client_states, &bar_go_close);
 	
 	
 	//Initialisation pthread
@@ -199,6 +247,7 @@ int main (int argc, char **argv)
                 return -1;
         }
     }
+sleep(3);
 
 	for (i = 0; i < nb_clients; i++) {
 		args_c[i].my_id = i;
@@ -209,22 +258,26 @@ int main (int argc, char **argv)
 				return -1;
         }
 	}
-	
+
     //Wait all threads
     for (i = 0; i < nb_clients; i++) {
 		pthread_join(pthreads_clients[i], NULL);
 	}
+    printf("clients finished succesfully");
+    fflush(stdout);
 
-    bar_go_close = 1;
+    go_home();
 
     for (i = 0; i < nb_barmans; i++) {
 		pthread_join(pthreads_barmans[i], NULL);
 	}
-	
+
 	//The bar close
 	bar_close();
 	
 	printf("\n** The bar is close **\n");
+    fflush(stdout);
+
     
     free(pthreads_clients);
     free(pthreads_barmans);
