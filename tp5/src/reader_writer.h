@@ -11,7 +11,7 @@
    anywhere in the code */ 
 typedef struct reader_writer *reader_writer_t;
 
-reader_writer_t rw_init(int nb_writters, int nb_readers); 
+reader_writer_t rw_init(); 
 
 void begin_read(reader_writer_t rw);
 

@@ -1,18 +1,5 @@
 #include "my_queue.h"
 
-typedef struct my_q_item
-{
-    int thread_id;
-    int status;
-    struct my_q_item *next;
-};
-
-typedef struct my_queue
-{
-  struct my_q_item *head;
-  struct my_q_item *tail;
-} my_queue;
-
 void init(my_queue q)
 {
     q.head = NULL;
@@ -37,4 +24,19 @@ my_q_item* dequeue(my_queue q)
     q.head = q.head->next;
     if (q.head==NULL) q.tail = NULL;
     return result;
+}
+
+int writter_before(my_queue q, int id)
+{
+	int bool = 0;
+	my_q_item *iterrator = q.head; 
+	while (iterrator != NULL) {
+		if (iterrator->status == WRITER) {
+			return 1;
+		}
+		if (iterrator->thread_id == id) {
+			return 0;
+		}
+	}
+	return -1;
 }
