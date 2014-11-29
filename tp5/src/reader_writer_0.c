@@ -1,5 +1,6 @@
 #include "reader_writer.h"
 #include "reader_writer_tracing.h"
+#include "queue.h"
 
 
 extern tracing_t t; 
@@ -12,7 +13,7 @@ typedef struct reader_writer{
 	pthread_cond_t  *cv_readers;
 	pthread_cond_t  *cv_writters;
 	pthread_mutex_t mstack;
-	//Queue stack;
+	Queue_s stack;
 	int nb_actual_reads;
 	pthread_mutex_t mactualreads;
 } reader_writer_s; 
