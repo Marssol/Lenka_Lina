@@ -7,19 +7,23 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+//Clients
 #define THINKING 1
-#define WAITING 2
-#define SERVED  3
-#define DRINKING  4
-#define DISPONSIBLE 5
+#define SERVED  2
+#define DRINKING  3
+//Clients and Barmans
+#define WAITING 4
+//Barmans
+#define DISPONIBLE 5
 #define BUSY 6
-#define FINISH 7
+//Bottles
 #define UNAVAILABLE 8
 #define AVAILABLE 9
 
+//Set bottles for drink client choice
 typedef struct Choice_bottles {
 	int nb_bottles;
-	int *set_bottles;
+	int *set_bottles; 
 } Choice_bottles;
 
 void init(int n_clients, int m_barmans, int k_bottles, int **states_barmans, int *states_bottles, int *states_clients);

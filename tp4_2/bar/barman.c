@@ -2,7 +2,7 @@
 
 //Global variables
 int closed;
-
+//States
 int *clients_states; 
 int **barman_states; 
 int *bottle_states; 
@@ -22,7 +22,6 @@ pthread_cond_t  *cv_bottles;
 //Mutex
 pthread_mutex_t mb;  //Mutex barman
 pthread_mutex_t mbo; //Mutex bottles
-pthread_mutex_t mClose;
 
 static void print() 
 {
@@ -55,7 +54,7 @@ static void print()
 			case BUSY : 
 				printf("B ");
 				break;
-            case DISPONSIBLE :
+            case DISPONIBLE :
 				printf("D ");
 				break;
 			default :
@@ -87,7 +86,6 @@ void init(int n_clients, int m_barmans, int k_bottles, int **states_barmans, int
     closed = 0;
 	pthread_mutex_init (&mb, NULL);
 	pthread_mutex_init (&mb, NULL);
-    pthread_mutex_init (&mClose, NULL);
 	clients_states = states_clients;
 	barman_states = states_barmans;
 	bottle_states = states_bottles;
@@ -104,7 +102,7 @@ void init(int n_clients, int m_barmans, int k_bottles, int **states_barmans, int
 	int i;
     for (i = 0; i < m_barmans; i++) {
         pthread_cond_init (&cv_barmans[i], NULL);
-        barman_states[i][0] = DISPONSIBLE;
+        barman_states[i][0] = DISPONIBLE;
         barman_states[i][1] = -1;
     }
 	for (i = 0; i < n_clients; i++) {
@@ -132,7 +130,7 @@ void take_barman(int id_client, Choice_bottles str_set_bottles)
    
 	//Check if one barman is free
     int i = 0; // index of barman
-    while (i < nb_barman && barman_states[i][0] != DISPONSIBLE  ){
+    while (i < nb_barman && barman_states[i][0] != DISPONIBLE) {
         if (i == nb_barman - 1) {
 			pthread_cond_wait (&cv_all_barmans,&mb);
             i = -1;
@@ -151,9 +149,9 @@ void take_barman(int id_client, Choice_bottles str_set_bottles)
 
     pthread_cond_signal(&cv_barmans[i]); // signal barman serve drink to client
     printf("sent signal to barman %d\n",i);
-    //if (barman_states[i][0] != DISPONIBLE){
-        pthread_cond_wait(&cv_clients[id_client],&mb); // client is waiting for his/her drink
-    //}
+    
+    pthread_cond_wait(&cv_clients[id_client],&mb); // client is waiting for his/her drink
+	
 	//Show states tables
     clients_states[id_client] = DRINKING;
     printf("Client %d drink\n",id_client);
@@ -167,30 +165,30 @@ int ready(int id_barman)
 {
     pthread_mutex_lock (&mb);
 
-
-    if (barman_states[id_barman][0] == WAITING)
-    {
+    if (barman_states[id_barman][0] == WAITING) {
         pthread_mutex_unlock (&mb);
-        //pthread_mutex_unlock (&mClose);
         return closed;
     }
-    while (barman_states[id_barman][0] == DISPONSIBLE && !closed) {
-        pthread_cond_wait(&cv_barmans[id_barman],&mb); // waiting for job
+    //Waiting for a job
+    while (barman_states[id_barman][0] == DISPONIBLE && !closed) {
+        pthread_cond_wait(&cv_barmans[id_barman],&mb); 
 	}
 	
 	pthread_mutex_unlock (&mb);
+    
     return closed;
 }
 
 void go_home()
 {
     pthread_mutex_lock (&mb);
+    
     closed = 1;
     int i;
-    for(i = 0;i<nb_barman;i++)
-    {
+    for(i = 0; i < nb_barman; i++) {
         pthread_cond_signal(&cv_barmans[i]);
     }
+   
     pthread_mutex_unlock (&mb);
 }
 
@@ -202,36 +200,36 @@ void take_bottles(int id_barman)
     int i; // index of bottle in the set of clients choice
 	int my_id_client = barman_states[id_barman][1];
 	int *set_bottles = client_choices[my_id_client].set_bottles;
+    
     printf("bottles chosen by client %d and wanted by barman %d\n",my_id_client,id_barman);
-    for (i = 0; i < client_choices[my_id_client].nb_bottles; i++)
-    {
+    for (i = 0; i < client_choices[my_id_client].nb_bottles; i++) {
         printf("%d ",set_bottles[i]);
     }
     printf("\n");
+    
+    //Try to takes bottles
 	for (i = 0; i < client_choices[my_id_client].nb_bottles; i++) {
         while (bottle_states[set_bottles[i]] != AVAILABLE) {
-            pthread_cond_wait (&cv_bottles[set_bottles[i]],&mbo); // barman waiting for bottle i
-		}
-		
+            pthread_cond_wait(&cv_bottles[set_bottles[i]],&mbo); // barman waiting for bottle i
+		}	
 		bottle_states[set_bottles[i]] = UNAVAILABLE;
 	}
 	
+	//Prepare the drink
 	barman_states[id_barman][0] = BUSY;
 	
 	//Show states tables
 	printf("Barman %d prepare the coktail\n",id_barman);
     print();
+    
 	pthread_mutex_unlock (&mbo);	
 }
 
 void put_botlles_free_barman(int id_barman)
 {
 	pthread_mutex_lock (&mbo);
-
-    //Prevent your client he can drink
-    //pthread_cond_signal (&cv_clients[barman_states[id_barman][1]]);
 	
-    //announce all you collegue the botlles are avaible
+    //Announce all you collegue the botlles are avaible
     int i; // index of bottles choices
 	int my_id_client = barman_states[id_barman][1];
 	int *set_bottles = client_choices[my_id_client].set_bottles;
@@ -240,16 +238,21 @@ void put_botlles_free_barman(int id_barman)
         bottle_states[set_bottles[i]] = AVAILABLE;
         pthread_cond_signal (&cv_bottles[set_bottles[i]]); // telling other barmans that bottle is free
 	}
+	
     pthread_mutex_unlock (&mbo);
 	
     pthread_mutex_lock (&mb); // lock barmans
-    barman_states[id_barman][0] = DISPONSIBLE;
+    
+    barman_states[id_barman][0] = DISPONIBLE;
     pthread_cond_signal (&cv_clients[my_id_client]); // hey, client, your drink is ready!
+	
 	//Show states tables
 	printf("Barman %d finish prepare the drink, he is ready\n",id_barman);
 	print();
-    //adding -lenka
-    pthread_cond_signal (&cv_all_barmans); // barman is free
+	
+    //Prevent they are a new barman free
+    pthread_cond_signal (&cv_all_barmans); 
+    
     pthread_mutex_unlock (&mb);
 }
 

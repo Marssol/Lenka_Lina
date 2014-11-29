@@ -10,7 +10,7 @@
 
 //Argument structure
 typedef struct Array_arg {
-	int nb_philo;
+	int id_philo;
 } Array_arg;
 
 //Global variables
@@ -19,7 +19,7 @@ int *philo_state;
 void *dinner (void *arg) 
 {
 	Array_arg *argu = (Array_arg *)arg;
-    int nb_philo = argu->nb_philo;
+    int id_philo = argu->id_philo;
     int nb_meals_ate = 0;
     
     while (nb_meals_ate < NB_MEALS) {
@@ -28,14 +28,14 @@ void *dinner (void *arg)
 		int think_time = rand() % THINK_TIME;
 		sleep(think_time);
 		
-        take_chopstick(nb_philo);
+        take_chopstick(id_philo);
 		
 		//Eating
 		sleep(EAT_TIME);
 		
 		nb_meals_ate++;
 		
-        put_chopstick(nb_philo);
+        put_chopstick(id_philo);
 	}
 	
 	return 0;
@@ -51,8 +51,8 @@ int main (int argc, char **argv)
 	//Variables
 	//Check is nb_thread is correct
     int nb_thread = atoi(argv[1]);
-	if (nb_thread > 5) {
-		printf("Number of thread have to be minimum 5\n");
+	if (nb_thread < 1) {
+		fprintf(stderr, "Number of thread have to be minimum 1\n");
 		return(-1);
 	}
 	
@@ -73,11 +73,10 @@ int main (int argc, char **argv)
 	pthread_t *pthreads = (pthread_t *)malloc(nb_thread*sizeof(pthread_t));
 
 	for (i = 0; i < nb_thread; i++) {
-		args[i].nb_philo = i;
+		args[i].id_philo = i;
         if (pthread_create(&pthreads[i], NULL, dinner, &args[i])) {
-
-				printf("ERROR !\n");
-				return -1;
+			fprintf(stderr, "Error : unable to create a thread (pthread_create)\n");
+			return -1;
         }
 	}
 	

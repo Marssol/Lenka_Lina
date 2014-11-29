@@ -1,0 +1,23 @@
+TP4 Lenka and Lina
+
+Part1 :
+folder dinner : first solution for philosopher, it s can suffer from starvation.
+                deadlock can never hapen.
+		compile
+			> make
+		execute 
+			>./dinner nbthread                
+
+folder philo : Our good version for philosophers problem
+               We order request chopstick in order. 
+               it's means we don't have deadblock. And the starvation can
+               not hapen.
+		compile
+			> make
+		execute 
+			>./dinner nbthread                
+folder bar : The barman problem. No deablock and no starvation
+		compile
+			> make
+		execute 
+			>./bar nbphilo nbbarman nbbottle               
