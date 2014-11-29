@@ -22,7 +22,8 @@ void *thread_func(void *a){
   tracing_register_thread(t, id); 
   int i ;
   for(i = 0; i < 10; i++){
-    list_insert(&list, rand()%10); 
+    list_insert(&list, rand()%10);
+    sleep(rand()%1);
     if(list_exists(&list, id)){
       printf("Thread nmbr %d, won.\n", id); 
       return NULL; 

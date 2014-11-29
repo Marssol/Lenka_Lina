@@ -1,6 +1,7 @@
 #include "reader_writer.h"
 #include "reader_writer_tracing.h"
 //#include "my_queue.h"
+#include <stdio.h>
 
 #define READER 0
 #define WRITER 1
@@ -34,35 +35,40 @@ typedef struct reader_writer{
 	pthread_mutex_t mactualreads;
 } reader_writer_s; 
 
-void init(my_queue q)
+void init(my_queue* q)
 {
-    q.head = NULL;
-    q.tail = NULL;
+    q->head = NULL;
+    q->tail = NULL;
 }
 
-void enqueue(my_queue q, my_q_item* item)
+void enqueue(my_queue* q, my_q_item* item)
 {
-    if (q.tail != NULL) q.tail->next = item;
-    q.tail = item;
+    printf("starting enqueue\n");
+    fflush(stdout);
+    if (q->tail != NULL) q->tail->next = item;
+    q->tail = item;
     item->next = NULL;
-    if (q.head == NULL) {
-		q.head = item;
-		q.tail = item;
+    if (q->head == NULL) {
+        q->head = item;
+        q->tail = item;
 	}
+    //printf("finish enqueuque");
+    //fflush(stdout);
+    return;
 }
 
-my_q_item* dequeue(my_queue q)
+my_q_item* dequeue(my_queue* q)
 {
-    if (q.head == NULL) return NULL;
-    my_q_item *result = q.head;
-    q.head = q.head->next;
-    if (q.head==NULL) q.tail = NULL;
+    if (q->head == NULL) return NULL;
+    my_q_item *result = q->head;
+    q->head = q->head->next;
+    if (q->head==NULL) q->tail = NULL;
     return result;
 }
 
-int writter_before(my_queue q, int id)
+int writter_before(my_queue* q, int id)
 {
-	my_q_item *iterrator = q.head; 
+    my_q_item *iterrator = q->head;
 	while (iterrator != NULL) {
 		if (iterrator->status == WRITER) {
 			return 1;
@@ -81,13 +87,13 @@ reader_writer_t rw_init()
 	reader_writer_t rw = malloc(sizeof(reader_writer_s)); 
 	
 	rw->begining = 1;
-	rw->nb_threads = t->nb_threads;
+    //rw->nb_threads = t->nb_threads;
 	rw->nb_actual_reads = 0;
 	rw->nb_writters_waiting = 0;
 	rw->ids = 0;
 	
 	//Initialisation queue
-	init(rw->queue);
+    init(&rw->queue);
 	
 	//Initialisation mutex
 	pthread_mutex_init (&(rw->mbegining), NULL);
@@ -105,23 +111,27 @@ reader_writer_t rw_init()
 
 void begin_read(reader_writer_t rw)
 {
-	pthread_mutex_lock (&rw->mactualreads);
+    printf("we want read\n"); fflush(stdout);
+    pthread_mutex_lock (&rw->mactualreads);
 	rw->ids++;
 	int my_id = rw->ids;
 	
 	my_q_item *item = (my_q_item*)malloc(sizeof(my_q_item));
 	item->thread_id = my_id;
 	item->status = READER;
-	enqueue(rw->queue, item);
+    enqueue(&rw->queue, item);
 	
 	//nb_actual_reads == -1 if one writter write
-	while (rw->nb_actual_reads < 0 || !writter_before(rw->queue, my_id) || rw->begining == 1) {
-		pthread_cond_wait (&rw->cv,&rw->mactualreads);
+    printf("nb actual reads %d writterbefore %d begin %d\n",rw->nb_actual_reads < 0, writter_before(&rw->queue, my_id), rw->begining); fflush(stdout);
+    while (rw->nb_actual_reads < 0 || writter_before(&rw->queue, my_id) || rw->begining == 1) {
+        fflush(stdout);
+        pthread_cond_wait (&rw->cv,&rw->mactualreads);
 	}
-	
+    printf("we can read\n"); fflush(stdout);
+    fflush(stdout);
 	tracing_record_event(t, BR_EVENT_ID);
 	
-	dequeue(rw->queue);
+    dequeue(&rw->queue);
 	rw->nb_actual_reads++;
 	
 	free(item);
@@ -132,6 +142,7 @@ void begin_read(reader_writer_t rw)
 void end_read(reader_writer_t rw)
 {	
 	pthread_mutex_lock (&rw->mactualreads);
+    printf("we finished read\n"); fflush(stdout);
 	
 	rw->nb_actual_reads--;	
 	
@@ -146,7 +157,8 @@ void end_read(reader_writer_t rw)
 
 void begin_write(reader_writer_t rw)
 {
-	pthread_mutex_lock(&rw->mactualreads);
+    printf("we want write\n"); fflush(stdout);
+    pthread_mutex_lock(&rw->mactualreads);
 	rw->ids++;
 	int my_id = rw->ids;
 	rw->begining = 0;
@@ -154,13 +166,13 @@ void begin_write(reader_writer_t rw)
 	my_q_item *item = (my_q_item*)malloc(sizeof(my_q_item));
 	item->thread_id = my_id;
 	item->status = WRITER;
-	enqueue(rw->queue, item);
-	while (rw->nb_actual_reads != 0 || rw->queue.head->thread_id == my_id) {
+    enqueue(&rw->queue, item);
+    while (rw->nb_actual_reads != 0 || rw->queue.head->thread_id != my_id) {
 		pthread_cond_wait (&rw->cv,&rw->mactualreads);	
 	}
-	
+    printf("we can write\n"); fflush(stdout);
 	tracing_record_event(t, BW_EVENT_ID);	
-	dequeue(rw->queue);
+    dequeue(&rw->queue);
 	rw->nb_actual_reads = -1;
 	
 	free(item);
@@ -176,6 +188,7 @@ void end_write(reader_writer_t rw){
 	
 	pthread_cond_signal(&rw->cv);
 	
-	pthread_mutex_unlock(&rw->mactualreads);  
+    pthread_mutex_unlock(&rw->mactualreads);
+    printf("we finished write\n"); fflush(stdout);
 }
 
