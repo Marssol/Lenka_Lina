@@ -18,12 +18,36 @@ typedef struct reader_writer{
 	pthread_mutex_t mactualreads;
 } reader_writer_s; 
 
-reader_writer_t rw_init(){
-  reader_writer_t rw = malloc(sizeof(reader_writer_s)); 
-
-  /* ... */
-  
-  return rw; 
+reader_writer_t rw_init(int nb_writters, int nb_readers)
+{
+	//Structure allocation
+	reader_writer_t rw = malloc(sizeof(reader_writer_s)); 
+	
+	rw->begining = 1;
+	rw->nb_readers = nb_readers;
+	rw->nb_writters = nb_writters;
+	rw->nb_actual_reads = 0;
+	
+	//Initialisation queue
+	stack_nb_init(&(rw->stack), nb_writters, nb_readers);
+	
+	//Initialisation mutex
+	pthread_mutex_init (&(rw->mbegining), NULL);
+	pthread_mutex_init (&(rw->mstack), NULL);
+	pthread_mutex_init (&(rw->mactualreads), NULL);
+	
+	//Initialisation conditions
+	rw->cv_readers = (pthread_cond_t*)(malloc(nb_readers*sizeof(pthread_cond_t)));
+	rw->cv_writters = (pthread_cond_t*)(malloc(nb_writters*sizeof(pthread_cond_t)));
+	int i;
+    for (i = 0; i < nb_writters; i++) {
+        pthread_cond_init (&rw->cv_writters[i], NULL);
+    }
+	for (i = 0; i < nb_readers; i++) {
+        pthread_cond_init (&rw->cv_readers[i], NULL);
+    }
+	
+	return rw; 
 }
 
 
