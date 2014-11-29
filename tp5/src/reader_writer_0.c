@@ -1,7 +1,6 @@
 #include "reader_writer.h"
 #include "reader_writer_tracing.h"
-#include "queue.h"
-
+#include "my_queue.h"
 
 extern tracing_t t; 
 
@@ -12,8 +11,8 @@ typedef struct reader_writer{
 	int nb_writters;
 	pthread_cond_t  *cv_readers;
 	pthread_cond_t  *cv_writters;
-	pthread_mutex_t mstack;
-	Queue_s stack;
+	pthread_mutex_t mqueue;
+	my_queue queue;
 	int nb_actual_reads;
 	pthread_mutex_t mactualreads;
 } reader_writer_s; 
@@ -29,11 +28,11 @@ reader_writer_t rw_init(int nb_writters, int nb_readers)
 	rw->nb_actual_reads = 0;
 	
 	//Initialisation queue
-	stack_nb_init(&(rw->stack), nb_writters, nb_readers);
+	init(rw->queue);
 	
 	//Initialisation mutex
 	pthread_mutex_init (&(rw->mbegining), NULL);
-	pthread_mutex_init (&(rw->mstack), NULL);
+	pthread_mutex_init (&(rw->mqueue), NULL);
 	pthread_mutex_init (&(rw->mactualreads), NULL);
 	
 	//Initialisation conditions
