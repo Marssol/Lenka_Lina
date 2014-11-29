@@ -5,7 +5,16 @@
 extern tracing_t t; 
 
 typedef struct reader_writer{
-  /* Complete with whater your need for synchronization */
+	int begining;
+	pthread_mutex_t mbegining;
+	int nb_readers;
+	int nb_writters;
+	pthread_cond_t  *cv_readers;
+	pthread_cond_t  *cv_writters;
+	pthread_mutex_t mstack;
+	//Queue stack;
+	int nb_actual_reads;
+	pthread_mutex_t mactualreads;
 } reader_writer_s; 
 
 reader_writer_t rw_init(){
