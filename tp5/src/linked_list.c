@@ -30,6 +30,7 @@ void list_insert(struct linked_list_head *list, int val){
   new_cell->next = list->head; 
   new_cell->nb = val;
   list->head = new_cell; 
+  sleep(rand()%1);
   end_write(list->sync); 
 }
 

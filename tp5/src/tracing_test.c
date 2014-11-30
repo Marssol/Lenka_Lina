@@ -20,7 +20,7 @@ void *func(void *a){
   return NULL;
 }
 
-int main(){
+int cmain(){
   tracing_s tracing; 
   t = &tracing; 
 
