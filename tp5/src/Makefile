@@ -1,5 +1,5 @@
-CC=gcc
-CFLAGS=-g -Wall -Werror
+CC=clang
+CFLAGS=-g -Wall -Werror 
 LDFLAGS=-lpthread 
 
 SOURCES=linked_list.c reader_writer_tracing.c 
