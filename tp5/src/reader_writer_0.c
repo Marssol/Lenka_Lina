@@ -1,6 +1,7 @@
 #include "reader_writer.h"
 #include "reader_writer_tracing.h"
 //#include "my_queue.h"
+#include <stdio.h>
 
 #define READER 0
 #define WRITER 1
@@ -81,7 +82,6 @@ reader_writer_t rw_init()
 	reader_writer_t rw = malloc(sizeof(reader_writer_s)); 
 	
 	rw->begining = 1;
-	rw->nb_threads = t->nb_threads;
 	rw->nb_actual_reads = 0;
 	rw->nb_writters_waiting = 0;
 	rw->ids = 0;
@@ -113,6 +113,11 @@ void begin_read(reader_writer_t rw)
 	item->thread_id = my_id;
 	item->status = READER;
 	enqueue(rw->queue, item);
+	
+	if (rw->queue.head == NULL) {
+		printf("EROOOOOOOOOOOR\n");
+		exit(2);
+	}
 	
 	//nb_actual_reads == -1 if one writter write
 	while (rw->nb_actual_reads < 0 || !writter_before(rw->queue, my_id) || rw->begining == 1) {
